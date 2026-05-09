@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>プゥル・ヴー 納品書発行システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:#f8f7f4;min-height:100vh}
+input,select,button{font-family:'Noto Sans JP',sans-serif}
+.header{background:#1a1a2e;color:#fff;padding:0 24px;display:flex;align-items:center;gap:16px;height:64px;position:sticky;top:0;z-index:500}
+.content{max-width:1100px;margin:0 auto;padding:24px 16px;padding-top:24px}
+.logo{font-size:16px;font-weight:600;color:#FFD700;line-height:1.3}
+.logo-sub{font-size:11px;color:#aaa}
+.nav{display:flex;gap:2px;margin-left:auto;flex-wrap:nowrap}
+.nav button{background:transparent;color:#ccc;border:none;cursor:pointer;padding:6px 12px;border-radius:6px;font-size:12px;white-space:nowrap}
+.nav button.active{background:#e8d5b7;color:#1a1a2e;font-weight:600}
+.card{background:#fff;border-radius:12px;border:.5px solid #e0ddd6;padding:24px;margin-bottom:16px}
+.card h3{font-size:16px;font-weight:600;color:#1a1a2e;margin-bottom:16px}
+label.lbl{font-size:12px;color:#888;margin-bottom:4px;display:block}
+input[type=text],input[type=date],input[type=number],select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff}
+input[type=number]{text-align:center}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+td{padding:9px 8px;border-bottom:.5px solid #f0ede8;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-primary{background:#1a1a2e;color:#e8d5b7;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+.btn-danger{background:#c62828;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-edit{background:#e8f0fe;color:#1a73e8;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px}
+.btn-save{background:#e8f5e9;color:#2e7d32;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px}
+.btn-cancel{background:#eee;color:#333;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-reprint{background:#f0ede8;color:#333;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:6px}
+.code-badge{background:#f0ede8;padding:2px 8px;border-radius:4px;font-size:11px}
+.inv-badge{background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:12px;font-size:11px}
+.toast{position:fixed;top:70px;right:20px;z-index:9999;padding:10px 20px;border-radius:8px;font-size:14px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:12px;padding:24px;max-width:920px;width:95%;max-height:90vh;overflow-y:auto}
+.hidden{display:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.issue-btn{background:#1a1a2e;color:#e8d5b7;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;width:100%;margin-top:16px}
+.total-row{display:flex;justify-content:flex-end;gap:24px;padding:16px 0;border-top:2px solid #1a1a2e;margin-top:8px;align-items:center}
+.guide-step{display:flex;gap:16px;margin-bottom:14px;align-items:flex-start}
+.guide-num{background:#1a1a2e;color:#e8d5b7;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.guide-note{background:#fffbf0;border:1px solid #f0d080;border-radius:8px;padding:10px 16px;font-size:13px;color:#7a5c00;line-height:1.7;margin-top:8px}
+.guide-warn{background:#fff5f5;border:1px solid #f0b0b0;border-radius:8px;padding:10px 16px;font-size:13px;color:#8a2020;line-height:1.7;margin-top:8px}
+.guide-badge{display:inline-block;background:#1a1a2e;color:#e8d5b7;border-radius:4px;padding:1px 8px;font-size:12px;font-weight:600;margin-right:6px}
+.guide-h3{font-size:16px;font-weight:600;color:#1a1a2e;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e8d5b7}
+.stat-card{background:#f5f3ef;border-radius:8px;padding:12px 16px}
+.stat-label{font-size:12px;color:#888}
+.stat-val{font-size:22px;font-weight:600;color:#1a1a2e}
+@media print{ @page{size:B5 landscape;margin:0} }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">株式会社プゥル・ヴー</div>
+    <div class="logo-sub">納品書発行システム</div>
+  </div>
+  <button id="back-btn" onclick="goBack()" style="background:transparent;color:#aaa;border:1px solid #444;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-left:8px;display:none">← 戻る</button>
+  <nav class="nav" id="nav"></nav>
+</div>
+<div id="toast" class="toast hidden"></div>
+<div class="content" id="main"></div>
+<div id="print-modal" class="overlay hidden"></div>
+
+<script>
+const COMPANY={name:"株式会社プゥル・ヴー",division:"ホワイト事業部",zip:"〒252-0025",address:"神奈川県大和市代官2-12-2",tel:"TEL046-267-9228",fax:"FAX046-201-2116"};
+const TABS=["伝票発行","発行履歴","客先管理","商品管理","単価対応表","設定","運用方法"];
+const DAY_NAMES=["日","月","火","水","木","金","土"];
+const DELIVERY_CYCLES={"㈱サイゼリヤ　神奈川工場":"月火水木金土","㈱サイゼリヤ　神奈川工場　ピザ工場":"月火水木金土","株式会社　大鶴":"火金","中島製作所":"火金","秀和エンジニアリング":"火金","相鉄企業株式会社":"金","新記総業㈱　甲子園２":"月木","協和クリーニング":"火金","㈱タニカワ":"木","ひなた山内科クリニック":"月金","すずらんクリニック":"金","湘南台薬局":"水","鹿島建設㈱　海老名中新田造成工事事務所":"火金","大林組　上瀬谷園芸博工事事務所":"月","大林組　上瀬谷ＰＣ１ＪＶ工事事務所":"月","大林組　国際園芸博ＰＶ工事事務所":"月","カフェホテル":"水土","誠品貿易株式会社":"水"};
+const INIT_CUSTOMERS=[{id:"001",name:"㈱サイゼリヤ　神奈川工場"},{id:"002",name:"㈱サイゼリヤ　神奈川工場　ピザ工場"},{id:"003",name:"株式会社　大鶴"},{id:"004",name:"中島製作所"},{id:"005",name:"秀和エンジニアリング"},{id:"006",name:"相鉄企業株式会社"},{id:"007",name:"新記総業㈱　甲子園２"},{id:"008",name:"協和クリーニング"},{id:"009",name:"㈱タニカワ"},{id:"010",name:"ひなた山内科クリニック"},{id:"011",name:"すずらんクリニック"},{id:"012",name:"湘南台薬局"},{id:"013",name:"鹿島建設㈱　海老名中新田造成工事事務所"},{id:"014",name:"大林組　上瀬谷園芸博工事事務所"},{id:"015",name:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所"},{id:"016",name:"大林組　国際園芸博ＰＶ工事事務所"},{id:"017",name:"カフェホテル"},{id:"018",name:"誠品貿易株式会社"},{id:"019",name:"アークホテル大和"},{id:"020",name:"神奈川労働局"}];
+const INIT_PRODUCTS=[{code:"W001",name:"Yシャツ"},{code:"W002",name:"Yシャツ　立体"},{code:"W003",name:"スーツ　上下"},{code:"W004",name:"スーツ　上"},{code:"W005",name:"スーツ　下"},{code:"W006",name:"ポロシャツ"},{code:"W007",name:"パーカー"},{code:"W008",name:"フェイスタオル・バスタオルセット"},{code:"W009",name:"バスタオル"},{code:"W010",name:"フェイスタオル"},{code:"W011",name:"バスマット"},{code:"W012",name:"水着　男性"},{code:"W013",name:"水着　女性"},{code:"W014",name:"半白衣"},{code:"W015",name:"白衣ズボン"},{code:"W016",name:"長白衣"},{code:"W017",name:"帽子"},{code:"W018",name:"インナーキャップ"},{code:"W019",name:"ズボン"},{code:"W020",name:"ジャンパー"},{code:"W021",name:"手袋"},{code:"W022",name:"エプロン"},{code:"W023",name:"ダウンジャンパー"},{code:"W024",name:"シーツ"},{code:"W025",name:"包布"},{code:"W026",name:"浴衣"},{code:"W027",name:"白衣　上"},{code:"W028",name:"白衣　下"},{code:"W029",name:"カーディガン"},{code:"W030",name:"ガウン"},{code:"W031",name:"ピロケース"},{code:"W032",name:"ゴム付きシーツ"},{code:"W033",name:"バスローブ（ひも付）"},{code:"W034",name:"ハンドタオル"},{code:"W035",name:"作業着　上"},{code:"W036",name:"作業着　下"},{code:"W037",name:"作業シャツ"},{code:"W038",name:"防寒ジャンパー"},{code:"W039",name:"ベンチコート"},{code:"W040",name:"キュロット"},{code:"W041",name:"スラックス"},{code:"W042",name:"ブラウス"},{code:"W043",name:"Ｔシャツ"},{code:"W044",name:"ひざ掛け"},{code:"W045",name:"キャップ"},{code:"W046",name:"ウェア　Tシャツ"},{code:"W047",name:"ウェア　短パン"},{code:"W048",name:"ベスト"},{code:"W049",name:"診察衣"},{code:"W050",name:"作業コート"},{code:"W051",name:"作業ジャケット"},{code:"W052",name:"作業ズボン"},{code:"W053",name:"作業防寒ブルゾン"},{code:"W054",name:"集配料"},{code:"W055",name:"ブランケット"}];
+const INIT_PRICES=[{customer:"㈱サイゼリヤ　神奈川工場",code:"W014",name:"半白衣",price:100},{customer:"㈱サイゼリヤ　神奈川工場",code:"W015",name:"白衣ズボン",price:100},{customer:"㈱サイゼリヤ　神奈川工場",code:"W016",name:"長白衣",price:120},{customer:"㈱サイゼリヤ　神奈川工場",code:"W017",name:"帽子",price:30},{customer:"㈱サイゼリヤ　神奈川工場",code:"W018",name:"インナーキャップ",price:10},{customer:"㈱サイゼリヤ　神奈川工場",code:"W019",name:"ズボン",price:120},{customer:"㈱サイゼリヤ　神奈川工場",code:"W020",name:"ジャンパー",price:180},{customer:"㈱サイゼリヤ　神奈川工場",code:"W021",name:"手袋",price:10},{customer:"㈱サイゼリヤ　神奈川工場",code:"W022",name:"エプロン",price:50},{customer:"㈱サイゼリヤ　神奈川工場",code:"W023",name:"ダウンジャンパー",price:1000},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W014",name:"半白衣",price:100},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W015",name:"白衣ズボン",price:100},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W016",name:"長白衣",price:120},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W017",name:"帽子",price:30},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W018",name:"インナーキャップ",price:10},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W019",name:"ズボン",price:120},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W020",name:"ジャンパー",price:180},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W021",name:"手袋",price:10},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W022",name:"エプロン",price:50},{customer:"㈱サイゼリヤ　神奈川工場　ピザ工場",code:"W023",name:"ダウンジャンパー",price:1000},{customer:"株式会社　大鶴",code:"W035",name:"作業着　上",price:170},{customer:"株式会社　大鶴",code:"W036",name:"作業着　下",price:170},{customer:"株式会社　大鶴",code:"W022",name:"エプロン",price:110},{customer:"中島製作所",code:"W035",name:"作業着　上",price:140},{customer:"中島製作所",code:"W036",name:"作業着　下",price:140},{customer:"中島製作所",code:"W038",name:"防寒ジャンパー",price:400},{customer:"秀和エンジニアリング",code:"W035",name:"作業着　上",price:165},{customer:"秀和エンジニアリング",code:"W036",name:"作業着　下",price:165},{customer:"秀和エンジニアリング",code:"W038",name:"防寒ジャンパー",price:400},{customer:"相鉄企業株式会社",code:"W008",name:"フェイスタオル・バスタオルセット",price:100},{customer:"相鉄企業株式会社",code:"W045",name:"キャップ",price:50},{customer:"相鉄企業株式会社",code:"W046",name:"ウェア　Tシャツ",price:80},{customer:"相鉄企業株式会社",code:"W047",name:"ウェア　短パン",price:80},{customer:"相鉄企業株式会社",code:"W012",name:"水着　男性",price:80},{customer:"相鉄企業株式会社",code:"W013",name:"水着　女性",price:100},{customer:"相鉄企業株式会社",code:"W009",name:"バスタオル",price:60},{customer:"相鉄企業株式会社",code:"W010",name:"フェイスタオル",price:40},{customer:"相鉄企業株式会社",code:"W011",name:"バスマット",price:140},{customer:"新記総業㈱　甲子園２",code:"W001",name:"Yシャツ",price:220},{customer:"新記総業㈱　甲子園２",code:"W042",name:"ブラウス",price:250},{customer:"新記総業㈱　甲子園２",code:"W048",name:"ベスト",price:350},{customer:"新記総業㈱　甲子園２",code:"W041",name:"スラックス",price:400},{customer:"新記総業㈱　甲子園２",code:"W040",name:"キュロット",price:400},{customer:"新記総業㈱　甲子園２",code:"W007",name:"パーカー",price:450},{customer:"新記総業㈱　甲子園２",code:"W006",name:"ポロシャツ",price:300},{customer:"新記総業㈱　甲子園２",code:"W043",name:"Ｔシャツ",price:300},{customer:"新記総業㈱　甲子園２",code:"W039",name:"ベンチコート",price:800},{customer:"新記総業㈱　甲子園２",code:"W044",name:"ひざ掛け",price:400},{customer:"協和クリーニング",code:"W024",name:"シーツ",price:130},{customer:"協和クリーニング",code:"W025",name:"包布",price:180},{customer:"協和クリーニング",code:"W031",name:"ピロケース",price:80},{customer:"㈱タニカワ",code:"W024",name:"シーツ",price:100},{customer:"㈱タニカワ",code:"W025",name:"包布",price:130},{customer:"㈱タニカワ",code:"W026",name:"浴衣",price:160},{customer:"ひなた山内科クリニック",code:"W049",name:"診察衣",price:440},{customer:"ひなた山内科クリニック",code:"W027",name:"白衣　上",price:220},{customer:"ひなた山内科クリニック",code:"W015",name:"白衣ズボン",price:220},{customer:"ひなた山内科クリニック",code:"W029",name:"カーディガン",price:250},{customer:"すずらんクリニック",code:"W049",name:"診察衣",price:440},{customer:"すずらんクリニック",code:"W027",name:"白衣　上",price:250},{customer:"すずらんクリニック",code:"W015",name:"白衣ズボン",price:250},{customer:"すずらんクリニック",code:"W029",name:"カーディガン",price:250},{customer:"すずらんクリニック",code:"W054",name:"集配料",price:500},{customer:"湘南台薬局",code:"W049",name:"診察衣",price:600},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W035",name:"作業着　上",price:420},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W036",name:"作業着　下",price:320},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W037",name:"作業シャツ",price:320},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W050",name:"作業コート",price:800},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W010",name:"フェイスタオル",price:50},{customer:"鹿島建設㈱　海老名中新田造成工事事務所",code:"W001",name:"Yシャツ",price:200},{customer:"大林組　上瀬谷園芸博工事事務所",code:"W051",name:"作業ジャケット",price:420},{customer:"大林組　上瀬谷園芸博工事事務所",code:"W052",name:"作業ズボン",price:320},{customer:"大林組　上瀬谷園芸博工事事務所",code:"W037",name:"作業シャツ",price:320},{customer:"大林組　上瀬谷園芸博工事事務所",code:"W053",name:"作業防寒ブルゾン",price:800},{customer:"大林組　上瀬谷園芸博工事事務所",code:"W006",name:"ポロシャツ",price:320},{customer:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所",code:"W051",name:"作業ジャケット",price:420},{customer:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所",code:"W052",name:"作業ズボン",price:320},{customer:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所",code:"W037",name:"作業シャツ",price:320},{customer:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所",code:"W053",name:"作業防寒ブルゾン",price:800},{customer:"大林組　上瀬谷ＰＣ１ＪＶ工事事務所",code:"W006",name:"ポロシャツ",price:320},{customer:"大林組　国際園芸博ＰＶ工事事務所",code:"W051",name:"作業ジャケット",price:420},{customer:"大林組　国際園芸博ＰＶ工事事務所",code:"W052",name:"作業ズボン",price:320},{customer:"大林組　国際園芸博ＰＶ工事事務所",code:"W037",name:"作業シャツ",price:320},{customer:"大林組　国際園芸博ＰＶ工事事務所",code:"W053",name:"作業防寒ブルゾン",price:800},{customer:"大林組　国際園芸博ＰＶ工事事務所",code:"W006",name:"ポロシャツ",price:320},{customer:"カフェホテル",code:"W024",name:"シーツ",price:140},{customer:"カフェホテル",code:"W032",name:"ゴム付きシーツ",price:190},{customer:"カフェホテル",code:"W025",name:"包布",price:190},{customer:"カフェホテル",code:"W031",name:"ピロケース",price:90},{customer:"カフェホテル",code:"W009",name:"バスタオル",price:40},{customer:"カフェホテル",code:"W010",name:"フェイスタオル",price:20},{customer:"カフェホテル",code:"W033",name:"バスローブ（ひも付）",price:158},{customer:"カフェホテル",code:"W011",name:"バスマット",price:70},{customer:"カフェホテル",code:"W034",name:"ハンドタオル",price:10},{customer:"カフェホテル",code:"W055",name:"ブランケット",price:500},{customer:"誠品貿易株式会社",code:"W024",name:"シーツ",price:285},{customer:"誠品貿易株式会社",code:"W025",name:"包布",price:300},{customer:"誠品貿易株式会社",code:"W031",name:"ピロケース",price:95},{customer:"アークホテル大和",code:"W010",name:"フェイスタオル",price:22},{customer:"アークホテル大和",code:"W009",name:"バスタオル",price:45},{customer:"アークホテル大和",code:"W030",name:"ガウン",price:70}];
+const INIT_MIN={" 新記総業㈱　甲子園２":2000,"鹿島建設㈱　海老名中新田造成工事事務所":2000,"大林組　上瀬谷園芸博工事事務所":3000,"大林組　上瀬谷ＰＣ１ＪＶ工事事務所":3000,"大林組　国際園芸博ＰＶ工事事務所":3000,"カフェホテル":5000,"神奈川労働局":3000};
+
+// --- State ---
+let state={
+  tab:0,
+  tabHistory:[],
+  tabHistory:[],
+  tabHistory:[],
+  tabHistory:[],
+  tabHistory:[],
+  customers:load("pv_customers",INIT_CUSTOMERS),
+  products:load("pv_products",INIT_PRODUCTS),
+  prices:load("pv_prices",INIT_PRICES),
+  history:load("pv_history",[]),
+  invoiceCounters:load("pv_invoice_counters",{}),
+  closingDays:load("pv_closing_days",{}),
+  minG:load("pv_min",INIT_MIN),
+  issue:{customer:"",freeCustomer:false,deliveryDate:"",items:[],customItems:[{name:"",qty:"",price:""}],useCustom:false,memo:""},
+  histSearch:"",
+  custSearch:"",
+  editingCustomer:null,
+  editingProduct:null,
+  editingPrice:null,
+  editingHistory:null,
+  filterCustomer:"",
+  showPrint:false,
+  printInvoice:null,
+  showAddCustomer:false,
+  customerDetail:null,
+  showAddProduct:false,
+  showAddPrice:false,
+  newCustomer:{id:"",name:"",cycle:"",mg:""},
+  newProduct:{code:"",name:""},
+  newPrice:{customer:"",code:"",name:"",price:""},
+};
+
+// DELIVERY_CYCLESをlocalStorageから復元（保存済みがあれば上書き）
+(function(){try{const saved=localStorage.getItem("pv_cycles");if(saved){const obj=JSON.parse(saved);Object.assign(DELIVERY_CYCLES,obj);}}catch{}})();
+function saveCycles(){try{localStorage.setItem("pv_cycles",JSON.stringify(DELIVERY_CYCLES));}catch{}}
+function load(k,fb){try{const r=localStorage.getItem(k);return r?JSON.parse(r):fb;}catch{return fb;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function saveAll(){save("pv_customers",state.customers);save("pv_products",state.products);save("pv_prices",state.prices);save("pv_history",state.history);save("pv_min",state.minG);save("pv_invoice_counters",state.invoiceCounters);save("pv_closing_days",state.closingDays);saveCycles();}
+
+function fmtDate(d){if(!d)return"";const dt=d instanceof Date?d:new Date(d);if(isNaN(dt))return"";return`${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,"0")}/${String(dt.getDate()).padStart(2,"0")}`;}
+function toInput(d){if(!d)return"";const dt=d instanceof Date?d:new Date(d);if(isNaN(dt))return"";return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;}
+function fromInput(s){if(!s)return new Date();const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function nextDelivery(name){const cycle=DELIVERY_CYCLES[name];if(!cycle)return new Date();const t=new Date();for(let i=1;i<=7;i++){const d=new Date(t);d.setDate(t.getDate()+i);if(cycle.includes(DAY_NAMES[d.getDay()]))return d;}return new Date();}
+function nextInvoiceNo(custName){
+  if(custName==="__FREE__"){
+    const prefix="999";
+    const fromHistory=state.history.filter(h=>h.invoiceNo&&h.invoiceNo.startsWith(prefix+"-P")).map(h=>parseInt((h.invoiceNo.split("-P")[1])||0));
+    const fromCounter=state.invoiceCounters[prefix]||0;
+    const mx=Math.max(fromCounter,...fromHistory,0);
+    return`${prefix}-P${String(mx+1).padStart(3,"0")}`;
+  }
+  const c=state.customers.find(x=>x.name===custName);
+  const prefix=c?c.id:"999";
+  const fromHistory=state.history.filter(h=>h.invoiceNo&&h.invoiceNo.startsWith(prefix+"-P")).map(h=>parseInt((h.invoiceNo.split("-P")[1])||0));
+  const fromCounter=state.invoiceCounters[prefix]||0;
+  const mx=Math.max(fromCounter,...fromHistory,0);
+  return`${prefix}-P${String(mx+1).padStart(3,"0")}`;
+}
+function getSubtotal(){const items=activeItems();return items.reduce((s,i)=>{const q=parseFloat(i.qty)||0;const p=parseFloat(i.price)||0;return s+q*p;},0);}
+function activeItems(){if(state.issue.useCustom)return state.issue.customItems.filter(i=>i.name&&i.qty&&parseFloat(i.qty)>0);return state.issue.items.filter(i=>i.qty&&parseFloat(i.qty)>0);}
+function getTotal(){const sub=getSubtotal();const mg=state.minG[state.issue.customer]||0;return Math.max(sub,mg);}
+
+function showToast(msg,type="success"){const t=document.getElementById("toast");t.textContent=msg;t.style.background=type==="success"?"#2d6a4f":"#c62828";t.classList.remove("hidden");setTimeout(()=>t.classList.add("hidden"),2500);}
+
+// --- Render ---
+function render(){
+  renderNav();
+  const main=document.getElementById("main");
+  if(state.tab===0)main.innerHTML=renderIssueTab();
+  else if(state.tab===1)main.innerHTML=renderHistoryTab();
+  else if(state.tab===2)main.innerHTML=renderCustomerTab();
+  else if(state.tab===3)main.innerHTML=renderProductTab();
+  else if(state.tab===4)main.innerHTML=renderPriceTab();
+  else if(state.tab===5)main.innerHTML=renderSettingsTab();
+  else if(state.tab===6)main.innerHTML=renderGuideTab();
+  bindEvents();
+  if(state.showPrint)renderPrintModal();
+}
+
+function renderNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML=TABS.map((t,i)=>`<button class="${state.tab===i?"active":""}" onclick="setTab(${i})">${t}</button>`).join("");
+  const backBtn=document.getElementById("back-btn");
+  if(state.tabHistory.length>0||state.customerDetail){
+    backBtn.style.display="inline-block";
+  } else {
+    backBtn.style.display="none";
+  }
+}
+
+function setTab(i){
+  state.tabHistory.push(state.tab);
+  if(state.tabHistory.length>20)state.tabHistory.shift();
+  state.tab=i;
+  state.customerDetail=null;
+  render();
+}
+
+function goBack(){
+  if(state.customerDetail){state.customerDetail=null;render();return;}
+  if(state.tabHistory.length>0){
+    state.tab=state.tabHistory.pop();
+    render();
+  }
+}
+
+// --- Issue Tab ---
+function renderIssueTab(){
+  const iss=state.issue;
+  const today=new Date();
+  const mg=state.minG[iss.customer]||0;
+  const sub=getSubtotal();
+  const total=getTotal();
+  const custOpts=state.customers.map(c=>`<option value="${c.name}"${iss.customer===c.name?"selected":""}>${c.name}</option>`).join("");
+  const invNo=(iss.customer||iss.freeCustomer)?nextInvoiceNo(iss.freeCustomer?"__FREE__":iss.customer):"—";
+  const cycle=iss.customer?DELIVERY_CYCLES[iss.customer]:"";
+
+  let itemsHtml="";
+  if(!iss.useCustom&&iss.items.length>0){
+    itemsHtml=`<table><thead><tr><th>商品コード</th><th>品名</th><th>単価</th><th style="width:100px">数量</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
+    iss.items.forEach((item,i)=>{
+      const amt=item.qty?(parseInt(item.qty)*item.price).toLocaleString():"—";
+      itemsHtml+=`<tr style="background:${item.qty?"#fafff8":""}"><td><span class="code-badge">${item.code}</span></td><td>${item.name}</td><td>¥${item.price.toLocaleString()}</td><td><input type="number" min="0" value="${item.qty||""}" style="width:80px;text-align:center" data-qty-idx="${i}" onchange="setItemQty(${i},this.value)" onkeydown="qtyKeyDown(event,${i})"></td><td style="text-align:right;font-weight:${item.qty?600:400}">${item.qty?"¥"+amt:"—"}</td></tr>`;
+    });
+    itemsHtml+=`</tbody></table>`;
+  } else {
+    itemsHtml=iss.customItems.map((item,i)=>`<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px"><input placeholder="品名" value="${item.name}" onchange="setCustomItem(${i},'name',this.value)" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px"><input type="number" placeholder="数量" value="${item.qty}" onchange="setCustomItem(${i},'qty',this.value)" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;text-align:center"><input type="number" placeholder="単価" value="${item.price}" onchange="setCustomItem(${i},'price',this.value)" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;text-align:right"><button onclick="removeCustomItem(${i})" style="background:#fee;border:1px solid #fcc;border-radius:6px;cursor:pointer;padding:0 10px;color:#c62828">✕</button></div>`).join("");
+    itemsHtml+=`<button onclick="addCustomItem()" style="background:#f5f3ef;border:1px solid #ddd;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:13px">＋ 行追加</button>`;
+  }
+
+  const freeInput=iss.freeCustomer?`<input type="text" placeholder="客先名を入力してください" value="${iss.customer}" oninput="setFreeCustomer(this.value)" style="margin-top:6px;width:100%;padding:9px 12px;border:1px solid #1a73e8;border-radius:8px;font-size:14px">`:""
+  const custDisplayName=iss.freeCustomer?"＋ リスト外の客先を入力":iss.customer
+  return`<h2 style="font-size:20px;font-weight:600;margin-bottom:20px;color:#1a1a2e">納品書発行</h2>
+  <div class="card">
+    <div class="grid3">
+      <div><label class="lbl">客先</label><select onchange="selectCustomer(this.value)"><option value="">-- 客先を選択 --</option>${custOpts}<option value="__FREE__" ${iss.freeCustomer?"selected":""}>＋ リスト外の客先を入力</option></select>${freeInput}</div>
+      <div><label class="lbl">入力日</label><input type="text" value="${fmtDate(today)}" readonly></div>
+      <div><label class="lbl">納品日</label>${(iss.customer||iss.freeCustomer)
+        ?`<input type="date" value="${iss.deliveryDate}" onchange="state.issue.deliveryDate=this.value;render()">${cycle?`<div style="margin-top:4px;font-size:12px;color:#888">サイクル：${cycle}</div>`:""}`
+        :`<input type="date" style="color:transparent">`}
+      </div>
+    </div>
+    ${(iss.customer||iss.freeCustomer)?`<div style="margin-top:8px;font-size:13px;color:#666">伝票番号（予定）：<strong>${invNo}</strong>${mg>0?`<span style="margin-left:16px;color:#c17a00">最低保証：¥${mg.toLocaleString()}</span>`:""}
+    </div>`:""}
+  </div>
+  ${(iss.customer||iss.freeCustomer)?`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0">品目・数量入力</h3>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px"><input type="checkbox" ${iss.useCustom?"checked":""} onchange="toggleCustom(this.checked)"> 自由入力モード</label>
+        <button class="btn-primary" style="padding:8px 20px;font-size:13px" onclick="issueInvoice()">納品書を発行する</button>
+      </div>
+    </div>
+    ${itemsHtml}
+    <div style="margin-top:12px">
+      <label class="lbl">備考（印刷に反映されます）</label>
+      <textarea placeholder="自由に入力できます" oninput="state.issue.memo=this.value" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;height:64px;line-height:1.6">${iss.memo||""}</textarea>
+    </div>
+    <div class="total-row">
+      ${mg>0&&sub<mg?`<div style="font-size:13px;color:#c17a00">小計 ¥${sub.toLocaleString()} → 最低保証 ¥${mg.toLocaleString()} 適用</div>`:""}
+      <div><div style="font-size:14px;color:#666">合計金額</div><div style="font-size:20px;font-weight:700;color:#1a1a2e">¥${total.toLocaleString()}</div></div>
+    </div>
+    <button class="issue-btn" onclick="issueInvoice()">納品書を発行する</button>
+  </div>`:""}`;
+}
+
+function selectCustomer(name){
+  if(name==="__FREE__"){
+    state.issue.freeCustomer=true;
+    state.issue.customer="";
+    state.issue.items=[];
+    state.issue.useCustom=true;
+    const today=new Date();today.setDate(today.getDate()+1);
+    state.issue.deliveryDate=toInput(today);
+    render();return;
+  }
+  state.issue.freeCustomer=false;
+  state.issue.customer=name;
+  if(!name){state.issue.items=[];state.issue.deliveryDate="";render();return;}
+  state.issue.deliveryDate=toInput(nextDelivery(name));
+  const cp=state.prices.filter(p=>p.customer===name);
+  state.issue.items=cp.map(p=>({...p,qty:""}));
+  state.issue.useCustom=cp.length===0;
+  render();
+}
+function setFreeCustomer(val){state.issue.customer=val;render();}
+function setItemQty(i,v){state.issue.items[i].qty=v;render();}
+function qtyKeyDown(e,i){
+  if(e.key==="Enter"){
+    e.preventDefault();
+    state.issue.items[i].qty=e.target.value;
+    const nextIdx=i+1;
+    render();
+    // render後にフォーカスを次の入力欄へ移動
+    const inputs=document.querySelectorAll("[data-qty-idx]");
+    const next=Array.from(inputs).find(el=>parseInt(el.dataset.qtyIdx)===nextIdx);
+    if(next){next.focus();next.select();}
+    else{const btn=document.querySelector(".issue-btn");if(btn)btn.focus();}
+  }
+}
+function setCustomItem(i,k,v){state.issue.customItems[i][k]=v;render();}
+function addCustomItem(){state.issue.customItems.push({name:"",qty:"",price:""});render();}
+function removeCustomItem(i){state.issue.customItems.splice(i,1);render();}
+function toggleCustom(v){state.issue.useCustom=v;render();}
+function issueInvoice(){
+  if(!state.issue.customer&&!state.issue.freeCustomer){showToast("客先を選択してください","error");return;}
+  if(state.issue.freeCustomer&&!state.issue.customer.trim()){showToast("客先名を入力してください","error");return;}
+  const items=activeItems();
+  if(!items.length){showToast("数量を入力してください","error");return;}
+  const sub=getSubtotal();const mg=state.minG[state.issue.customer]||0;const total=Math.max(sub,mg);
+  const invNoKey=state.issue.freeCustomer?"__FREE__":state.issue.customer;
+  const inv={id:Date.now(),invoiceNo:nextInvoiceNo(invNoKey),customer:state.issue.customer,deliveryDate:state.issue.deliveryDate?fromInput(state.issue.deliveryDate):new Date(),issueDate:new Date(),items,subtotal:sub,minGuarantee:mg,total,memo:state.issue.memo||""};
+  state.history.unshift(inv);
+  // 発行番号をcountersに保存（履歴削除後も番号を引き継ぐため）
+  const invPrefix=inv.invoiceNo.split("-")[0];
+  const invNum=parseInt((inv.invoiceNo.split("-P")[1])||0);
+  if(!state.invoiceCounters[invPrefix]||state.invoiceCounters[invPrefix]<invNum){
+    state.invoiceCounters[invPrefix]=invNum;
+    save("pv_invoice_counters",state.invoiceCounters);
+  }
+  // 3ヶ月より古い履歴を自動削除
+  const threeMonthsAgo=new Date();threeMonthsAgo.setMonth(threeMonthsAgo.getMonth()-3);
+  state.history=state.history.filter(h=>new Date(h.issueDate)>=threeMonthsAgo);
+  save("pv_history",state.history);
+  state.issue.freeCustomer=false;state.issue.memo="";
+  state.printInvoice=inv;state.showPrint=true;render();
+}
+
+// --- History Tab ---
+if(!state.openFolders)state.openFolders={};
+function renderHistoryTab(){
+  if(state.editingHistory) return renderHistoryEdit();
+  const filtered=state.history.filter(h=>!state.histSearch||h.customer?.includes(state.histSearch)||h.invoiceNo?.includes(state.histSearch));
+
+  // 客先ごとにグループ化
+  const groups={};
+  filtered.forEach(h=>{
+    const key=h.customer||"（客先不明）";
+    if(!groups[key])groups[key]=[];
+    groups[key].push(h);
+  });
+
+  const folderHtml=Object.keys(groups).sort().map(customer=>{
+    const items=groups[customer];
+    const isOpen=state.openFolders[customer]===true; // デフォルト閉じる
+    const rows=items.map(h=>`<tr><td><span class="inv-badge">${h.invoiceNo}</span></td><td>${fmtDate(h.deliveryDate)}</td><td>${fmtDate(h.issueDate)}</td><td style="text-align:right;font-weight:600">¥${h.total?.toLocaleString()}</td><td><button class="btn-edit" onclick="openHistoryEdit(${h.id})">修正</button><button class="btn-reprint" onclick="reprintInvoice(${h.id})">再印刷</button><button class="btn-danger" onclick="deleteHistory(${h.id})">削除</button></td></tr>`).join("");
+    return`<div style="margin-bottom:10px;border:1px solid #e8e4de;border-radius:10px;overflow:hidden">
+      <div onclick="state.openFolders['${customer}']=!state.openFolders['${customer}'];if(state.openFolders['${customer}']==undefined)state.openFolders['${customer}']=false;render()"
+        style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#f7f4ef;cursor:pointer;user-select:none">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${isOpen?"📂":"📁"}</span>
+          <span style="font-weight:600;font-size:15px">${customer}</span>
+          <span style="font-size:12px;color:#888;background:#e8e4de;border-radius:10px;padding:1px 8px">${items.length}件</span>
+        </div>
+        <span style="color:#aaa;font-size:13px">${isOpen?"▲":"▼"}</span>
+      </div>
+      ${isOpen?`<div style="overflow-x:auto"><table style="margin:0"><thead><tr><th>伝票番号</th><th>納品日</th><th>発行日</th><th style="text-align:right">合計金額</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`:""}
+    </div>`;
+  }).join("");
+
+  const emptyHtml=`<div style="text-align:center;color:#aaa;padding:40px">履歴がありません</div>`;
+
+  const todayStr=fmtDate(new Date());
+  const todayCount=state.history.filter(h=>fmtDate(new Date(h.deliveryDate))===todayStr).length;
+  // 締め日別・客先別の書き出し候補を生成
+  const closingOpts=[...new Set(Object.values(state.closingDays))].filter(v=>v!=="").sort((a,b)=>a-b);
+  const closingCustOpts=state.customers.map(c=>{const cd=state.closingDays[c.name];const cdLabel=cd===0?"月末〆":cd?cd+"日〆":"締め日未設定";return`<option value="${c.name}">${c.name}（${cdLabel}）</option>`;}).join("");
+  return`<h2 style="font-size:20px;font-weight:600;margin-bottom:20px;color:#1a1a2e">発行履歴</h2>
+  <div class="card" style="background:#f0f7ff;border:1px solid #90caf9">
+    <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:12px">📋 請求明細書をExcelで書き出す</div>
+    <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <div><label class="lbl">今日（${todayStr}）発行分 ${todayCount}件</label>
+        <button onclick="exportTodayExcel()" style="display:block;background:#1565c0;color:#fff;border:none;padding:10px 22px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap;margin-top:4px">📥 今日の分をExcel書き出し</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid #bbdefb;padding-top:12px">
+      <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:8px">締め日ごとに書き出す</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+        <div><label class="lbl">客先</label><select id="export-cust" style="padding:7px 10px;border:1px solid #90caf9;border-radius:6px;font-size:13px;min-width:220px"><option value="">（全客先）</option>${closingCustOpts}</select></div>
+        <div><label class="lbl">基準年月</label><input type="month" id="export-month" style="padding:7px 10px;border:1px solid #90caf9;border-radius:6px;font-size:13px" value="${new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0")}"></div>
+        <button onclick="exportClosingExcel()" style="background:#0277bd;color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">📥 締め日期間で書き出し</button>
+      </div>
+      <div style="font-size:12px;color:#777;margin-top:6px">※ 締め日が設定されていない客先は対象外です。客先管理タブで設定できます。</div>
+    </div>
+    <div style="border-top:1px solid #bbdefb;margin-top:12px;padding-top:12px">
+      <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:6px">📂 明細書Excelへの取り込み用データ</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+        <button onclick="exportMeisaiJson()" style="background:#37474f;color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">📂 明細書用データを書き出す</button>
+      </div>
+      <div style="font-size:12px;color:#777;margin-top:6px">※ 締め日を過ぎると自動で翌月シートに切り替わります。書き出したJSONをExcelマクロで取り込んでください。</div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input type="text" placeholder="客先名・伝票番号で検索" value="${state.histSearch}" oninput="state.histSearch=this.value;render()" style="flex:1">
+      <button onclick="Object.keys(state.openFolders).forEach(k=>state.openFolders[k]=true);render()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:12px">全て開く</button>
+      <button onclick="Object.keys(state.openFolders).forEach(k=>state.openFolders[k]=false);render()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:12px">全て閉じる</button>
+    </div>
+    ${filtered.length?folderHtml:emptyHtml}
+  </div>`;
+}
+
+function openHistoryEdit(id){
+  const inv=state.history.find(h=>h.id===id);
+  if(!inv)return;
+  state.editingHistory={
+    id:inv.id,
+    invoiceNo:inv.invoiceNo,
+    customer:inv.customer,
+    deliveryDate:toInput(new Date(inv.deliveryDate)),
+    items:inv.items.map(i=>({...i})),
+    subtotal:inv.subtotal,
+    minGuarantee:inv.minGuarantee||0,
+    total:inv.total,
+  };
+  render();
+}
+
+function renderHistoryEdit(){
+  const eh=state.editingHistory;
+  const itemRows=eh.items.map((item,i)=>`
+    <tr>
+      <td style="padding:6px 8px"><input value="${item.name}" onchange="state.editingHistory.items[${i}].name=this.value;recalcHistoryTotal()" style="width:100%;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px"></td>
+      <td style="padding:6px 8px"><input type="number" value="${item.qty}" onchange="state.editingHistory.items[${i}].qty=this.value;recalcHistoryTotal()" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;text-align:center"></td>
+      <td style="padding:6px 8px"><input type="number" value="${item.price}" onchange="state.editingHistory.items[${i}].price=parseInt(this.value)||0;recalcHistoryTotal()" style="width:80px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;text-align:right"></td>
+      <td style="padding:6px 8px;text-align:right;font-size:13px">¥${((parseFloat(item.qty)||0)*(parseFloat(item.price)||0)).toLocaleString()}</td>
+      <td style="padding:6px 8px"><button class="btn-danger" onclick="removeHistoryItem(${i})">削除</button></td>
+    </tr>`).join("");
+  const sub=eh.items.reduce((s,i)=>(parseFloat(i.qty)||0)*(parseFloat(i.price)||0)+s,0);
+  const mg=eh.minGuarantee||0;
+  const total=Math.max(sub,mg);
+  return`
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+    <button onclick="state.editingHistory=null;render()" style="background:#f0ede8;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px">← 履歴一覧に戻る</button>
+    <h2 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0">履歴修正</h2>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:16px">基本情報</h3>
+    <div class="grid3" style="gap:16px">
+      <div><label class="lbl">伝票番号</label><input value="${eh.invoiceNo}" onchange="state.editingHistory.invoiceNo=this.value" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+      <div><label class="lbl">客先名</label><input value="${eh.customer}" readonly style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#f5f3ef;color:#888"></div>
+      <div><label class="lbl">納品日</label><input type="date" value="${eh.deliveryDate}" onchange="state.editingHistory.deliveryDate=this.value" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:16px">品目・数量</h3>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f5f3ef">
+        <th style="padding:8px;text-align:left;font-size:13px">品名</th>
+        <th style="padding:8px;text-align:center;font-size:13px;width:80px">数量</th>
+        <th style="padding:8px;text-align:right;font-size:13px;width:90px">単価</th>
+        <th style="padding:8px;text-align:right;font-size:13px;width:90px">金額</th>
+        <th style="padding:8px;width:60px"></th>
+      </tr></thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+    <button onclick="addHistoryItem()" style="margin-top:12px;background:#f5f3ef;border:1px solid #ddd;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:13px">＋ 行追加</button>
+    <div class="total-row">
+      ${mg>0&&sub<mg?`<div style="font-size:13px;color:#c17a00">小計 ¥${sub.toLocaleString()} → 最低保証 ¥${mg.toLocaleString()} 適用</div>`:""}
+      <div><div style="font-size:14px;color:#666">合計金額</div><div style="font-size:20px;font-weight:700;color:#1a1a2e">¥${total.toLocaleString()}</div></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;justify-content:flex-end">
+    <button onclick="state.editingHistory=null;render()" class="btn-cancel" style="padding:10px 24px;font-size:14px">キャンセル</button>
+    <button onclick="saveHistoryEdit()" class="btn-primary" style="padding:10px 32px;font-size:14px">修正を保存する</button>
+  </div>`;
+}
+
+function recalcHistoryTotal(){
+  const eh=state.editingHistory;
+  const sub=eh.items.reduce((s,i)=>(parseFloat(i.qty)||0)*(parseFloat(i.price)||0)+s,0);
+  eh.subtotal=sub;
+  eh.total=Math.max(sub,eh.minGuarantee||0);
+  render();
+}
+function removeHistoryItem(i){state.editingHistory.items.splice(i,1);recalcHistoryTotal();}
+function addHistoryItem(){state.editingHistory.items.push({name:"",qty:"",price:0});render();}
+function saveHistoryEdit(){
+  const eh=state.editingHistory;
+  const sub=eh.items.reduce((s,i)=>(parseFloat(i.qty)||0)*(parseFloat(i.price)||0)+s,0);
+  const total=Math.max(sub,eh.minGuarantee||0);
+  state.history=state.history.map(h=>h.id===eh.id?{...h,invoiceNo:eh.invoiceNo,deliveryDate:eh.deliveryDate?new Date(eh.deliveryDate):h.deliveryDate,items:eh.items,subtotal:sub,total}:h);
+  save("pv_history",state.history);
+  state.editingHistory=null;showToast("修正を保存しました");render();
+}
+
+function reprintInvoice(id){const inv=state.history.find(h=>h.id===id);if(!inv)return;state.printInvoice=inv;state.showPrint=true;render();}
+function deleteHistory(id){if(!confirm("この履歴を削除しますか？"))return;state.history=state.history.filter(h=>h.id!==id);save("pv_history",state.history);showToast("削除しました");render();}
+
+// --- Customer Tab ---
+function renderCustomerTab(){
+  if(state.customerDetail) return renderCustomerDetail();
+  const search=state.custSearch||"";
+  const filtered=state.customers.filter(c=>!search||c.name.includes(search)||c.id.includes(search));
+  const rows=filtered.map(c=>{
+    const cd=state.closingDays[c.name];const cdLabel=cd===0?"月末〆":cd?cd+"日〆":"—";
+    return`<tr><td style="width:70px"><span class="code-badge">${c.id}</span></td><td><a href="#" onclick="openCustomerDetail('${c.id}');return false;" style="color:#1a73e8;text-decoration:none;font-weight:500">${c.name}</a></td><td style="width:120px">${state.minG[c.name]>0?"¥"+(state.minG[c.name]).toLocaleString():"—"}</td><td style="width:100px">${(DELIVERY_CYCLES[c.name]||"—")}</td><td style="width:90px">${cdLabel}</td><td style="width:160px"><div style="display:flex;gap:6px"><button class="btn-edit" onclick="openCustomerDetail('${c.id}')">詳細編集</button><button class="btn-danger" onclick="deleteCustomer('${c.id}')">削除</button></div></td></tr>`;
+  }).join("");
+  if(state.showAddCustomer&&!state.newCustomer.id){const ids=state.customers.map(c=>parseInt(c.id)||0);state.newCustomer.id=String(Math.max(...ids)+1).padStart(3,"0");}
+  const DAY_BTN_NEW=["月","火","水","木","金","土","日"];
+  const cycleBtnsNew=DAY_BTN_NEW.map(day=>{const a=state.newCustomer.cycle.includes(day);return`<button type="button" onclick="toggleNewCycleDay('${day}')" style="padding:4px 10px;border:1px solid ${a?"#1a1a2e":"#ddd"};background:${a?"#1a1a2e":"#fff"};color:${a?"#e8d5b7":"#333"};border-radius:6px;cursor:pointer;font-size:13px">${day}</button>`;}).join("");
+  const addForm=state.showAddCustomer?`<div class="card" style="background:#fffef7;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:80px 1fr 160px;gap:10px;margin-bottom:12px">
+      <div><label class="lbl">No.（自動）</label><input value="${state.newCustomer.id}" oninput="state.newCustomer.id=this.value"></div>
+      <div><label class="lbl">客先名</label><input placeholder="会社名" value="${state.newCustomer.name}" oninput="state.newCustomer.name=this.value"></div>
+      <div><label class="lbl">最低保証金額</label><input type="number" value="${state.newCustomer.mg||""}" oninput="state.newCustomer.mg=parseInt(this.value)||0" placeholder="0"></div>
+    </div>
+    <div style="margin-bottom:12px"><label class="lbl">納品サイクル</label><div style="display:flex;gap:6px;margin-top:4px">${cycleBtnsNew}</div><div style="font-size:12px;color:#888;margin-top:4px">選択中：<strong>${state.newCustomer.cycle||"未設定"}</strong></div></div>
+    <button class="btn-primary" onclick="addCustomer()">追加</button></div>`:"";
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h2 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0">客先管理</h2><button class="btn-primary" onclick="state.showAddCustomer=!state.showAddCustomer;state.newCustomer={id:'',name:'',cycle:'',mg:''};render()">＋ 客先追加</button></div>
+  ${addForm}<div class="card">
+  <input type="text" placeholder="客先名・No.で検索" value="${search}" oninput="state.custSearch=this.value;render()" style="margin-bottom:12px">
+  <div style="font-size:12px;color:#888;margin-bottom:8px">${filtered.length} 件</div>
+  <table><thead><tr><th style="width:70px">No.</th><th>客先名</th><th style="width:120px">最低保証金額</th><th style="width:100px">納品サイクル</th><th style="width:90px">締め日</th><th style="width:160px">操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function openCustomerDetail(id){
+  const c=state.customers.find(x=>x.id===id);
+  const custPrices=state.prices.filter(p=>p.customer===c.name);
+  state.customerDetail={
+    id,name:c.name,originalName:c.name,
+    mg:state.minG[c.name]||0,
+    cycle:DELIVERY_CYCLES[c.name]||"",
+    closingDay:state.closingDays[c.name]!==undefined?state.closingDays[c.name]:"",
+    prices:custPrices.map(p=>({...p})),
+  };
+  render();
+}
+
+function renderCustomerDetail(){
+  const d=state.customerDetail;
+  const DAY_BTNS=["月","火","水","木","金","土","日"];
+  const cycleButtons=DAY_BTNS.map(day=>{
+    const active=d.cycle.includes(day);
+    return`<button onclick="toggleCycleDay('${day}')" style="padding:6px 12px;border:1px solid ${active?"#1a1a2e":"#ddd"};background:${active?"#1a1a2e":"#fff"};color:${active?"#e8d5b7":"#333"};border-radius:6px;cursor:pointer;font-size:14px">${day}</button>`;
+  }).join("");
+
+  const priceRows=d.prices.map((p,i)=>`<tr>
+    <td><span class="code-badge">${p.code}</span></td>
+    <td><input value="${p.name}" oninput="state.customerDetail.prices[${i}].name=this.value" style="width:100%;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px"></td>
+    <td><input type="number" value="${p.price}" oninput="state.customerDetail.prices[${i}].price=parseInt(this.value)||0" style="width:80px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;text-align:right"></td>
+    <td><button class="btn-danger" onclick="removeDetailPrice(${i})">削除</button></td>
+  </tr>`).join("");
+
+  const prodOpts=[...state.products].sort((a,b)=>a.name.localeCompare(b.name,'ja')).map(p=>`<option value="${p.code}">${p.name}（${p.code}）</option>`).join("");
+
+  return`
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+    <button onclick="state.customerDetail=null;render()" style="background:#f0ede8;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px">← 一覧に戻る</button>
+    <h2 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0">${d.name}</h2>
+  </div>
+
+  <div class="card">
+    <h3>基本情報</h3>
+    <div class="grid3" style="gap:16px">
+      <div><label class="lbl">客先名</label><input value="${d.name}" oninput="state.customerDetail.name=this.value"></div>
+      <div><label class="lbl">最低保証金額（円）</label><input type="number" value="${d.mg}" oninput="state.customerDetail.mg=parseInt(this.value)||0"></div>
+      <div><label class="lbl">客先No.</label><input value="${d.id}" readonly style="background:#f5f3ef;color:#888"></div>
+    </div>
+    <div style="margin-top:12px">
+      <label class="lbl">締め日</label>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+        ${[15,20,25,0].map(v=>{
+          const label=v===0?"月末":v+"日";
+          const active=(state.customerDetail.closingDay||0)===v;
+          return`<button type="button" onclick="state.customerDetail.closingDay=${v};render()" style="padding:6px 16px;border:1px solid ${active?"#1a1a2e":"#ddd"};background:${active?"#1a1a2e":"#fff"};color:${active?"#e8d5b7":"#333"};border-radius:6px;cursor:pointer;font-size:14px">${label}</button>`;
+        }).join("")}
+        <span style="font-size:12px;color:#888">現在：<strong>${(state.customerDetail.closingDay===0?"月末":(state.customerDetail.closingDay||"未設定")+"日")}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>納品サイクル</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${cycleButtons}</div>
+    <div style="margin-top:10px;font-size:13px;color:#888">現在の設定：<strong>${d.cycle||"未設定"}</strong></div>
+  </div>
+
+  <div class="card">
+    <h3>品目・単価</h3>
+    <table style="margin-bottom:12px">
+      <thead><tr><th style="width:80px">コード</th><th>品名</th><th style="width:90px;text-align:right">単価</th><th style="width:70px">操作</th></tr></thead>
+      <tbody>${priceRows}</tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 2fr 100px auto;gap:8px;align-items:end;padding-top:12px;border-top:.5px solid #f0ede8">
+      <div><label class="lbl">商品コード</label><select id="dp-code" onchange="setDetailNewCode(this.value)"><option value="">-- 選択 --</option>${prodOpts}</select></div>
+      <div><label class="lbl">品名</label><input id="dp-name" placeholder="自動入力"></div>
+      <div><label class="lbl">単価</label><input id="dp-price" type="number" placeholder="0"></div>
+      <button class="btn-primary" onclick="addDetailPrice()" style="margin-top:20px">＋ 追加</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:flex-end">
+    <button onclick="state.customerDetail=null;render()" class="btn-cancel" style="padding:10px 24px;font-size:14px">キャンセル</button>
+    <button onclick="saveCustomerDetail()" class="btn-primary" style="padding:10px 32px;font-size:14px">保存する</button>
+  </div>`;
+}
+
+function toggleCycleDay(day){
+  const d=state.customerDetail;
+  if(d.cycle.includes(day)){d.cycle=d.cycle.replace(day,"");}
+  else{
+    const order=["月","火","水","木","金","土","日"];
+    let c=d.cycle+day;
+    d.cycle=order.filter(x=>c.includes(x)).join("");
+  }
+  render();
+}
+
+function setDetailNewCode(v){
+  const p=state.products.find(x=>x.code===v);
+  document.getElementById("dp-name").value=p?.name||"";
+}
+
+function addDetailPrice(){
+  const code=document.getElementById("dp-code").value;
+  const name=document.getElementById("dp-name").value;
+  const price=parseInt(document.getElementById("dp-price").value)||0;
+  if(!code||!name){showToast("コードと品名を入力してください","error");return;}
+  state.customerDetail.prices.push({customer:state.customerDetail.name,code,name,price});
+  render();
+}
+
+function removeDetailPrice(i){
+  state.customerDetail.prices.splice(i,1);render();
+}
+
+function saveCustomerDetail(){
+  const d=state.customerDetail;
+  state.customers=state.customers.map(c=>c.id===d.id?{...c,name:d.name}:c);
+  if(d.originalName!==d.name){
+    state.minG[d.name]=state.minG[d.originalName]||0;
+    delete state.minG[d.originalName];
+    DELIVERY_CYCLES[d.name]=DELIVERY_CYCLES[d.originalName];
+    delete DELIVERY_CYCLES[d.originalName];
+    state.prices=state.prices.map(p=>p.customer===d.originalName?{...p,customer:d.name}:p);
+  }
+  state.minG[d.name]=d.mg;
+  DELIVERY_CYCLES[d.name]=d.cycle;
+  if(d.closingDay!=="")state.closingDays[d.name]=d.closingDay;
+  state.prices=state.prices.filter(p=>p.customer!==d.name);
+  state.prices.push(...d.prices.map(p=>({...p,customer:d.name})));
+  state.customerDetail=null;saveAll();showToast("保存しました");render();
+}
+
+function editCustomer(id){const c=state.customers.find(x=>x.id===id);state.editingCustomer={id,name:c.name,originalName:c.name,mg:state.minG[c.name]||0};render();}
+function saveCustomer(id){
+  const ec=state.editingCustomer;
+  state.customers=state.customers.map(c=>c.id===id?{...c,name:ec.name}:c);
+  if(ec.originalName!==ec.name){state.minG[ec.name]=state.minG[ec.originalName]||0;delete state.minG[ec.originalName];}
+  if(ec.mg!==undefined)state.minG[ec.name]=ec.mg;
+  state.editingCustomer=null;saveAll();showToast("更新しました");render();
+}
+function deleteCustomer(id){if(!confirm("削除しますか？"))return;state.customers=state.customers.filter(c=>c.id!==id);saveAll();showToast("削除しました");render();}
+function addCustomer(){
+  const nc=state.newCustomer;
+  if(!nc.id||!nc.name){showToast("Noと客先名を入力してください","error");return;}
+  if(state.customers.find(c=>c.id===nc.id)){showToast("同じNoが存在します","error");return;}
+  state.customers.push({id:nc.id,name:nc.name});
+  if(nc.cycle)DELIVERY_CYCLES[nc.name]=nc.cycle;
+  if(nc.mg)state.minG[nc.name]=parseInt(nc.mg)||0;
+  state.newCustomer={id:"",name:"",cycle:"",mg:""};state.showAddCustomer=false;saveAll();showToast("追加しました");render();
+}
+
+function toggleNewCycleDay(day){const order=["月","火","水","木","金","土","日"];let c=state.newCustomer.cycle;if(c.includes(day)){c=c.replace(day,"");}else{c=c+day;}state.newCustomer.cycle=order.filter(x=>c.includes(x)).join("");render();}
+
+// --- Product Tab ---
+function renderProductTab(){
+  const items=state.products.map(p=>{
+    if(state.editingProduct?.code===p.code)return`<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border:1.5px solid #1a73e8;border-radius:8px;background:#f0f7ff"><input value="${state.editingProduct.code}" onchange="state.editingProduct.code=this.value" style="width:62px;padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;text-align:center"><input value="${state.editingProduct.name}" onchange="state.editingProduct.name=this.value" style="flex:1;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px"><button class="btn-save" onclick="saveProduct('${p.code}')">✓ 保存</button><button class="btn-cancel" onclick="state.editingProduct=null;render()">✕</button></div>`;
+    return`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:.5px solid #e8e5df;border-radius:8px"><span class="code-badge" style="min-width:48px;text-align:center">${p.code}</span><span style="flex:1;font-size:13px">${p.name}</span><button class="btn-edit" onclick="state.editingProduct={code:'${p.code}',name:'${p.name}'};render()">編集</button><button class="btn-danger" onclick="deleteProduct('${p.code}')">削除</button></div>`;
+  }).join("");
+  if(state.showAddProduct&&!state.newProduct.code){state.newProduct.code=nextProductCode();}
+  const addForm=state.showAddProduct?`<div class="card" style="background:#fffef7;margin-bottom:16px"><div style="display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:end">
+    <div><label class="lbl">商品コード（自動）</label><input value="${state.newProduct.code}" oninput="state.newProduct.code=this.value"></div>
+    <div><label class="lbl">品名</label><input placeholder="品名" value="${state.newProduct.name}" oninput="state.newProduct.name=this.value"></div>
+    <button class="btn-primary" onclick="addProduct()">追加</button></div></div>`:"";
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h2 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0">商品管理</h2><button class="btn-primary" onclick="state.showAddProduct=!state.showAddProduct;state.newProduct={code:'',name:''};render()">＋ 商品追加</button></div>
+  ${addForm}<div class="card"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${items}</div></div>`;
+}
+function saveProduct(oldCode){
+  const ep=state.editingProduct;
+  if(!ep.code||!ep.name){showToast("コードと品名を入力してください","error");return;}
+  if(ep.code!==oldCode&&state.products.find(p=>p.code===ep.code)){showToast("同じコードが存在します","error");return;}
+  state.products=state.products.map(p=>p.code===oldCode?{code:ep.code,name:ep.name}:p);
+  if(ep.code!==oldCode){state.prices=state.prices.map(p=>p.code===oldCode?{...p,code:ep.code,name:ep.name}:p);}
+  state.editingProduct=null;saveAll();showToast("更新しました");render();
+}
+function deleteProduct(code){if(!confirm("削除しますか？"))return;state.products=state.products.filter(p=>p.code!==code);saveAll();showToast("削除しました");render();}
+function nextProductCode(){const codes=state.products.map(p=>p.code).filter(c=>/^W\d+$/.test(c)).map(c=>parseInt(c.replace("W","")));const mx=codes.length?Math.max(...codes):0;return"W"+String(mx+1).padStart(3,"0");}
+function addProduct(){const np=state.newProduct;if(!np.code||!np.name){showToast("コードと品名を入力","error");return;}if(state.products.find(p=>p.code===np.code)){showToast("同じコードが存在します","error");return;}state.products.push({code:np.code,name:np.name});state.newProduct={code:"",name:""};state.showAddProduct=false;saveAll();showToast("追加しました");render();}
+
+// --- Price Tab ---
+function renderPriceTab(){
+  const filtered=state.prices.filter(p=>!state.filterCustomer||p.customer===state.filterCustomer);
+  const custOpts=state.customers.map(c=>`<option value="${c.name}"${state.filterCustomer===c.name?"selected":""}>${c.name}</option>`).join("");
+  const rows=filtered.map((p,fi)=>{
+    const ri=state.prices.indexOf(p);
+    if(state.editingPrice?.idx===ri)return`<tr><td>${p.customer}</td><td><span class="code-badge">${p.code}</span></td><td><input value="${state.editingPrice.name}" onchange="state.editingPrice.name=this.value" style="padding:4px 8px;border:1px solid #ddd;border-radius:6px"></td><td style="text-align:right"><input type="number" value="${state.editingPrice.price}" onchange="state.editingPrice.price=parseInt(this.value)||0" style="width:80px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;text-align:right"></td><td><button class="btn-save" onclick="savePrice(${ri})">保存</button><button class="btn-cancel" onclick="state.editingPrice=null;render()">取消</button></td></tr>`;
+    return`<tr><td>${p.customer}</td><td><span class="code-badge">${p.code}</span></td><td>${p.name}</td><td style="text-align:right">¥${p.price.toLocaleString()}</td><td><button class="btn-edit" onclick="state.editingPrice={idx:${ri},name:'${p.name}',price:${p.price}};render()">編集</button><button class="btn-danger" onclick="deletePrice(${ri})">削除</button></td></tr>`;
+  }).join("");
+  const prodOpts=state.products.map(p=>`<option value="${p.code}">${p.code} ${p.name}</option>`).join("");
+  const custOpts2=state.customers.map(c=>`<option value="${c.name}">${c.name}</option>`).join("");
+  const addForm=state.showAddPrice?`<div class="card" style="background:#fffef7;margin-bottom:16px"><div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr auto;gap:10px;align-items:end">
+    <div><label class="lbl">客先</label><select oninput="state.newPrice.customer=this.value"><option value="">-- 選択 --</option>${custOpts2}</select></div>
+    <div><label class="lbl">商品コード</label><select oninput="setNewPriceCode(this.value)"><option value="">-- 選択 --</option>${prodOpts}</select></div>
+    <div><label class="lbl">品名（省略可）</label><input value="${state.newPrice.name}" oninput="state.newPrice.name=this.value"></div>
+    <div><label class="lbl">単価</label><input type="number" value="${state.newPrice.price}" oninput="state.newPrice.price=this.value" placeholder="0"></div>
+    <button class="btn-primary" onclick="addPrice()">追加</button></div></div>`:"";
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h2 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0">単価対応表</h2><button class="btn-primary" onclick="state.showAddPrice=!state.showAddPrice;render()">＋ 追加</button></div>
+  ${addForm}<div class="card">
+  <select onchange="state.filterCustomer=this.value;render()" style="margin-bottom:16px;padding:8px 12px;border:1px solid #ddd;border-radius:8px"><option value="">全客先表示</option>${custOpts}</select>
+  <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} 件</div>
+  <table><thead><tr><th>客先名</th><th>コード</th><th>品名</th><th style="text-align:right">単価</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function setNewPriceCode(v){const p=state.products.find(x=>x.code===v);state.newPrice.code=v;state.newPrice.name=p?.name||"";}
+function savePrice(i){const ep=state.editingPrice;state.prices[i]={...state.prices[i],name:ep.name,price:ep.price};state.editingPrice=null;saveAll();showToast("更新しました");render();}
+function deletePrice(i){if(!confirm("削除しますか？"))return;state.prices.splice(i,1);saveAll();showToast("削除しました");render();}
+function addPrice(){const np=state.newPrice;if(!np.customer||!np.code||!np.price){showToast("必須項目を入力してください","error");return;}const prod=state.products.find(p=>p.code===np.code);const name=np.name||prod?.name||np.code;state.prices.push({customer:np.customer,code:np.code,name,price:parseInt(np.price)});state.newPrice={customer:"",code:"",name:"",price:""};state.showAddPrice=false;saveAll();showToast("追加しました");render();}
+
+// --- Settings Tab ---
+function renderSettingsTab(){
+  return`<h2 style="font-size:20px;font-weight:600;margin-bottom:20px;color:#1a1a2e">設定</h2>
+  <div class="card"><h3>データバックアップ・共有</h3><p style="font-size:13px;color:#888;margin-bottom:16px">JSONファイルに書き出し・読み込みができます。3台のPCで共有する場合はこのファイルを共有フォルダに保存し、各PCでインポートしてください。</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn-primary" onclick="exportData()">バックアップを書き出す</button>
+  <label style="background:#2d6a4f;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">データをインポートする<input type="file" accept=".json" onchange="importData(this)" style="display:none"></label></div></div>
+  <div class="card"><h3>データ統計</h3><div class="grid4">
+  <div class="stat-card"><div class="stat-label">客先数</div><div class="stat-val">${state.customers.length} 社</div></div>
+  <div class="stat-card"><div class="stat-label">商品数</div><div class="stat-val">${state.products.length} 品目</div></div>
+  <div class="stat-card"><div class="stat-label">単価設定</div><div class="stat-val">${state.prices.length} 件</div></div>
+  <div class="stat-card"><div class="stat-label">発行履歴</div><div class="stat-val">${state.history.length} 件</div></div></div></div>
+  <div class="card"><h3 style="color:#c62828">データ初期化</h3><p style="font-size:13px;color:#c62828;margin-bottom:12px">全データを初期状態に戻します。発行履歴も削除されます。</p><button class="btn-danger" style="padding:10px 24px;font-size:14px" onclick="resetAll()">初期化する</button></div>
+  <div class="card"><h3>会社情報</h3><div style="font-size:13px;line-height:2;color:#444"><div><strong>${COMPANY.name}</strong>　${COMPANY.division}</div><div>${COMPANY.zip}　${COMPANY.address}</div><div>${COMPANY.tel}　${COMPANY.fax}</div></div></div>`;
+}
+
+const BLANK_XLSX_B64 = "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";
+
+function b64ToAB(b64) {
+  const bin = atob(b64);
+  const buf = new ArrayBuffer(bin.length);
+  const arr = new Uint8Array(buf);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return buf;
+}
+
+// 締め日から対象期間を計算
+// closingDay: 20/25/0(月末)
+// baseYM: {year, month} = 締め日が含まれる月
+// 戻り値: {from: Date, to: Date}
+function getClosingPeriod(closingDay, baseYear, baseMonth) {
+  let to, from;
+  if (closingDay === 0) {
+    // 月末締め: 当月1日〜当月末日
+    to = new Date(baseYear, baseMonth, 0); // 月末
+    from = new Date(baseYear, baseMonth - 1, 1);
+  } else {
+    // N日締め: 前月(N+1)日〜当月N日
+    to = new Date(baseYear, baseMonth - 1, closingDay);
+    from = new Date(baseYear, baseMonth - 2, closingDay + 1);
+  }
+  return { from, to };
+}
+
+function dateInRange(dateVal, from, to) {
+  const d = new Date(dateVal);
+  if (isNaN(d)) return false;
+  const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const f = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const t = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+  return dd >= f && dd <= t;
+}
+
+// 伝票リスト（最大14枚）を1シートに書き込む
+function fillSheet(wb, invoices, sheetLabel, yr, mo) {
+  // テンプレートをコピー（スタイル・数式・結合を完全保持）
+  const templateWb = XLSX.read(b64ToAB(BLANK_XLSX_B64), {type:"array", cellStyles:true});
+  const templateWs = templateWb.Sheets[templateWb.SheetNames[0]];
+  const ws = JSON.parse(JSON.stringify(templateWs));
+
+  // セルに値をセットするヘルパー（既存スタイルを保持しつつ値だけ更新）
+  function setCell(addr, type, value) {
+    if (!ws[addr]) ws[addr] = {};
+    ws[addr].t = type;
+    ws[addr].v = value;
+    if (type === "n" && typeof value === "string" && value.startsWith("=")) {
+      ws[addr].t = "n";
+      ws[addr].f = value.slice(1);
+      ws[addr].v = 0;
+    }
+  }
+
+  // ── ヘッダー部分 ──
+  // A5: 客先名（A5:F5結合セル）
+  setCell("A5", "s", sheetLabel.replace(/\(\d+\)$/, "").trim());
+  // O3: 年（数字）, Q3: 月（数字）
+  setCell("O3", "n", yr);
+  setCell("Q3", "n", mo);
+  // A9: 締め日表示（客先の締め日に合わせて自動表示）
+  const closingDay = state.closingDays[sheetLabel.replace(/_\d+年\d+月$/, "").replace(/\(\d+\)$/, "").trim()];
+  const shimeLbl = (closingDay === 0) ? "月末〆" : (closingDay ? closingDay + "日〆" : "25日〆");
+  setCell("A9", "s", shimeLbl);
+
+  const colLetters = ["C","D","E","F","G","H","I","J","K","L","M","N","O","P"];
+
+  // ── 行10: 伝票番号 / 行11: 納品日 ──
+  invoices.forEach((inv, i) => {
+    if (i >= 14) return;
+    const col = colLetters[i];
+    setCell(col + "10", "s", inv.invoiceNo || "");
+    const d = new Date(inv.deliveryDate);
+    // 納品日をM/D形式で表示（例: 5/2）
+    const mdDate = isNaN(d) ? "" : (d.getMonth()+1) + "/" + d.getDate();
+    setCell(col + "11", "s", mdDate);
+  });
+
+  // ── 品名の収集（登場順を保持）──
+  const productOrder = [];
+  const productSet = new Set();
+  invoices.forEach(inv => {
+    (inv.items || []).forEach(it => {
+      if (it.name && !productSet.has(it.name)) {
+        productOrder.push(it.name);
+        productSet.add(it.name);
+      }
+    });
+  });
+
+  // 単価マップ（最後に登場した値を使用）
+  const priceMap = {};
+  invoices.forEach(inv => {
+    (inv.items || []).forEach(it => { if (it.name) priceMap[it.name] = it.price || 0; });
+  });
+
+  // ── 行12〜: 品名・単価・数量 ──
+  productOrder.forEach((pname, rowIdx) => {
+    const excelRow = 12 + rowIdx;
+    setCell("A" + excelRow, "s", pname);
+    setCell("B" + excelRow, "n", priceMap[pname] || 0);
+
+    // C〜P列: 各伝票の数量
+    invoices.forEach((inv, invIdx) => {
+      if (invIdx >= 14) return;
+      const item = (inv.items || []).find(it => it.name === pname);
+      const qty = item ? (parseFloat(item.qty) || 0) : 0;
+      if (qty > 0) setCell(colLetters[invIdx] + excelRow, "n", qty);
+    });
+    // Q・R列の数式はテンプレート既存のものをそのまま使用（上書きしない）
+  });
+
+  // !ref を更新（最大44行 or データ行数に合わせる）
+  ws["!ref"] = "A1:R" + Math.max(44, 11 + productOrder.length);
+
+  const safeLabel = sheetLabel.substring(0, 31);
+  XLSX.utils.book_append_sheet(wb, ws, safeLabel);
+}
+
+// 客先+伝票リストからワークブックにシートを追加（14枚超えで自動分割）
+function appendSheetsForCustomer(wb, customer, invoices, yr, mo) {
+  const pageSize = 14;
+  const pages = Math.ceil(invoices.length / pageSize);
+  const baseName = customer.replace(/[\/\\:*?\[\]]/g, "").substring(0, pages > 1 ? 28 : 31);
+  for (let p = 0; p < pages; p++) {
+    const chunk = invoices.slice(p * pageSize, (p + 1) * pageSize);
+    const label = pages > 1 ? baseName + `(${p+1})` : baseName;
+    fillSheet(wb, chunk, label, yr, mo);
+  }
+}
+
+// 今日の発行分を書き出し
+function exportTodayExcel() {
+  const todayStr = fmtDate(new Date());
+  const filtered = state.history.filter(h => fmtDate(new Date(h.deliveryDate)) === todayStr);
+  if (filtered.length === 0) { showToast("今日の発行履歴がありません", "error"); return; }
+  const d = new Date();
+  const yr = d.getFullYear(), mo = d.getMonth() + 1;
+  const byCustomer = {};
+  filtered.forEach(h => {
+    const c = h.customer || "（客先不明）";
+    if (!byCustomer[c]) byCustomer[c] = [];
+    byCustomer[c].push(h);
+  });
+  const wb = XLSX.utils.book_new();
+  Object.keys(byCustomer).forEach(c => appendSheetsForCustomer(wb, c, byCustomer[c], yr, mo));
+  const fname = `請求明細書_${yr}年${mo}月${d.getDate()}日.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast(`${fname} をダウンロードしました`);
+}
+
+// 締め日期間で書き出し
+function exportClosingExcel() {
+  const custEl = document.getElementById("export-cust");
+  const monthEl = document.getElementById("export-month");
+  if (!monthEl || !monthEl.value) { showToast("年月を選択してください", "error"); return; }
+  const [yrStr, moStr] = monthEl.value.split("-");
+  const baseYear = parseInt(yrStr), baseMonth = parseInt(moStr);
+  const selCust = custEl ? custEl.value : "";
+
+  // 対象客先を絞り込む
+  let targets = state.customers.filter(c => state.closingDays[c.name] !== undefined && state.closingDays[c.name] !== "");
+  if (selCust) targets = targets.filter(c => c.name === selCust);
+  if (targets.length === 0) { showToast("締め日が設定された客先がありません", "error"); return; }
+
+  const wb = XLSX.utils.book_new();
+  let totalSheets = 0;
+
+  targets.forEach(cust => {
+    const closingDay = state.closingDays[cust.name];
+    const { from, to } = getClosingPeriod(closingDay, baseYear, baseMonth);
+    const invoices = state.history.filter(h =>
+      h.customer === cust.name && dateInRange(h.deliveryDate, from, to)
+    );
+    if (invoices.length === 0) return;
+    // 日付順にソート
+    invoices.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+    appendSheetsForCustomer(wb, cust.name, invoices, baseYear, baseMonth);
+    totalSheets++;
+  });
+
+  if (totalSheets === 0) { showToast("該当期間に発行履歴がありません", "error"); return; }
+  const fname = `請求明細書_${baseYear}年${baseMonth}月締め.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast(`${fname} をダウンロードしました（${totalSheets}客先）`);
+}
+
+
+// 明細書Excel用JSONを書き出す
+// 締め日ごとに客先別・期間別で集計したデータを出力
+function exportMeisaiJson() {
+  const today = new Date();
+  const todayDay = today.getDate();
+
+  // 客先ごとに「どの請求月に属するか」を自動判定して集計
+  const meisaiData = [];
+
+  state.customers.forEach(cust => {
+    const closingDay = state.closingDays[cust.name];
+
+    // 締め日から請求対象期間を計算
+    // 締め日未設定 → 当月1日〜末日
+    let from, to, billingYear, billingMonth;
+    const cd = (closingDay !== undefined && closingDay !== "") ? closingDay : 0;
+
+    if (cd === 0) {
+      // 月末締め: 当月1日〜当月末日
+      billingYear  = today.getFullYear();
+      billingMonth = today.getMonth() + 1;
+      from = new Date(billingYear, billingMonth - 1, 1);
+      to   = new Date(billingYear, billingMonth, 0);
+    } else {
+      // N日締め: 今日が締め日以前 → 当月締め期間 / 締め日を過ぎた → 翌月締め期間
+      if (todayDay <= cd) {
+        // 当月締め期間: 前月(cd+1)日 〜 今月cd日
+        billingYear  = today.getFullYear();
+        billingMonth = today.getMonth() + 1;
+      } else {
+        // 翌月締め期間: 今月(cd+1)日 〜 来月cd日
+        const next = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        billingYear  = next.getFullYear();
+        billingMonth = next.getMonth() + 1;
+      }
+      from = new Date(billingYear, billingMonth - 2, cd + 1);
+      to   = new Date(billingYear, billingMonth - 1, cd);
+    }
+
+    const invoices = state.history.filter(h =>
+      h.customer === cust.name && dateInRange(h.deliveryDate, from, to)
+    );
+    if (invoices.length === 0) return;
+
+    invoices.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+
+    // シート名: 客先名_YYYY年M月
+    const sheetName = cust.name + "_" + billingYear + "年" + billingMonth + "月";
+
+    meisaiData.push({
+      customer:    cust.name,
+      sheetName:   sheetName,
+      year:        billingYear,
+      month:       billingMonth,
+      closingDay:  cd,
+      periodFrom:  fmtDate(from),
+      periodTo:    fmtDate(to),
+      invoices: invoices.map(inv => ({
+        invoiceNo:    inv.invoiceNo || "",
+        deliveryDate: fmtDate(new Date(inv.deliveryDate)),
+        items: (inv.items || []).map(it => ({
+          name:  it.name  || "",
+          price: it.price || 0,
+          qty:   parseFloat(it.qty) || 0
+        })).filter(it => it.name && it.qty > 0)
+      }))
+    });
+  });
+
+  if (meisaiData.length === 0) {
+    showToast("現在の締め期間に発行履歴がありません", "error");
+    return;
+  }
+
+  const output = {
+    exportDate: new Date().toISOString(),
+    meisaiData
+  };
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `明細書データ_${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日.json`;
+  a.click();
+
+  // 書き出し内容のサマリーをトーストで表示
+  const summary = meisaiData.map(d => d.sheetName + "（" + d.invoices.length + "件）").join("、");
+  showToast("書き出し完了：" + summary);
+}
+
+function exportData(){const data={customers:state.customers,products:state.products,prices:state.prices,history:state.history,minG:state.minG,exportDate:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`pourvous_backup_${new Date().toLocaleDateString("ja")}.json`;a.click();showToast("バックアップを書き出しました");}
+function importData(el){const file=el.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.customers)state.customers=d.customers;if(d.products)state.products=d.products;if(d.prices)state.prices=d.prices;if(d.history)state.history=d.history;if(d.minG)state.minG=d.minG;saveAll();showToast("インポートしました");render();}catch{showToast("読み込みに失敗しました","error");}};r.readAsText(file);}
+function resetAll(){if(!confirm("全データを初期化しますか？この操作は取り消せません。"))return;state.customers=[...INIT_CUSTOMERS];state.products=[...INIT_PRODUCTS];state.prices=[...INIT_PRICES];state.history=[];state.minG={...INIT_MIN};saveAll();showToast("初期化しました");render();}
+
+// --- Guide Tab ---
+function renderGuideTab(){
+  return`<h2 style="font-size:20px;font-weight:600;margin-bottom:20px;color:#1a1a2e">運用方法</h2>
+
+  <div class="card"><h3 class="guide-h3">📋 毎日の運用フロー</h3>
+  ${[
+    ["客先を選択","「伝票発行」タブを開き、客先をドロップダウンから選択します。納品日が自動で入ります。"],
+    ["数量を入力","客先ごとの品目が自動表示されます。数量を入力してください。Enterキーを押すと次の品目へ移動できます。合計金額が自動計算されます。"],
+    ["納品書を発行","「納品書を発行する」ボタンを押すと印刷プレビューが表示されます。伝票番号は自動採番されます。"],
+    ["印刷する","「印刷（B5横）」ボタンを押して印刷します。印刷設定でB5・横向きを選択してください。"],
+    ["伝票を切り分ける","中央の破線で半分に切ります。1枚をお客様へ渡し、控えを社内で保管してください。"],
+    ["1日の終わりに明細書データを書き出す","「発行履歴」タブを開き、「📂 明細書用データを書き出す」ボタンを押します。JSONファイルが保存されます。締め日を過ぎると自動で翌月分として書き出されます。"],
+    ["明細書Excelに取り込む","明細書Excel（プゥル_ヴー明細書.xlsm）を開き、「取り込み」マクロを実行します。保存したJSONを選択するだけで全客先シートに自動転記されます。"]
+  ].map(([t,d],i)=>`<div class="guide-step"><div class="guide-num">${i+1}</div><div style="font-size:14px;line-height:1.7"><strong>${t}</strong>　${d}</div></div>`).join("")}
+  <div class="guide-note">伝票1枚につき1列（C列〜P列）に転記されます。行10に伝票番号、行11に納品日（5/2形式）が表示されます。同じ客先へ14枚を超えた場合は警告が出ます。</div></div>
+
+  <div class="card"><h3 class="guide-h3">📊 締め日と明細書シートの自動切り替え</h3>
+  <p style="font-size:14px;color:#555;margin-bottom:12px;line-height:1.7">客先ごとに締め日を設定しておくと、締め日を過ぎた翌日から自動的に翌月シートへ切り替わります。月の選択は不要で、ボタンを押すだけで正しい期間のデータが書き出されます。</p>
+  <div style="background:#f5f3ef;border-radius:8px;padding:14px;font-size:13px;line-height:2">
+    <strong>集計される期間の例（書き出し日：5月26日）</strong><br>
+    ・20日締め → 4/21〜5/20（5/21からは6月分シートへ）<br>
+    ・25日締め → 4/26〜5/25（5/26からは6月分シートへ）<br>
+    ・月末締め → 5/1〜5/31（6/1からは6月分シートへ）
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">締め日の設定方法（初回のみ）</div>
+    <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">客先管理</span>タブを開き、設定したい客先の「詳細編集」を押します。</div></div>
+    <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">「基本情報」欄の「締め日」で <strong>20日 / 25日 / 月末</strong> から選んで「保存する」を押します。</div></div>
+    <div class="guide-note">設定後は客先一覧でも締め日が確認できます。</div>
+  </div></div>
+
+  <div class="card"><h3 class="guide-h3">💴 単価の取り扱い</h3>
+  <p style="font-size:14px;color:#555;margin-bottom:12px;line-height:1.7">明細書への単価の反映は以下のルールで行われます。</p>
+  <div style="background:#f5f3ef;border-radius:8px;padding:14px;font-size:13px;line-height:2">
+    ・<strong>品名が初めて登場</strong>（新シート・新品目）→ 伝票側の単価で登録<br>
+    ・<strong>品名が既存行にある・単価が同じ</strong> → その行に数量を追記<br>
+    ・<strong>品名が同じでも単価が変わった</strong>（値上がりなど）→ <strong>別の行として新規追加</strong>
+  </div>
+  <div class="guide-note">値上がりがあった場合、同じ品名が2行になります。それぞれ別単価・別数量で正しく集計されます。</div></div>
+
+  <div class="card"><h3 class="guide-h3">✏️ 自由入力モードの使い方</h3>
+  <p style="font-size:14px;color:#555;margin-bottom:12px;line-height:1.7">単価対応表に登録されていない客先や、臨時の品目を発行するときに使用します。</p>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7">客先を選択後、「自由入力モード」のチェックボックスをオンにします。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">品名・数量・単価を直接入力します。入力欄をクリックしてそのまま文字が打てます。</div></div>
+  <div class="guide-step"><div class="guide-num">3</div><div style="font-size:14px;line-height:1.7">「＋ 行追加」ボタンで品目を増やせます。不要な行は「✕」で削除できます。</div></div>
+  <div class="guide-note">入力欄から外れると（Tabキーや他の場所をクリック）金額が自動計算されます。</div></div>
+
+  <div class="card"><h3 class="guide-h3">🔧 トラブル時の対処法</h3>
+  <div style="margin-bottom:20px"><div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">印刷がうまくいかなかった場合</div>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">発行履歴</span>タブを開きます。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">該当の伝票を探して「再印刷」ボタンを押します。同じ伝票番号でそのまま印刷できます。</div></div>
+  <div class="guide-note">伝票番号は変わりません。そのまま再印刷してください。</div></div>
+  <div style="margin-bottom:20px"><div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">数量や金額を間違えた場合</div>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">発行履歴</span>タブを開きます。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">該当の伝票の「修正」ボタンを押します。</div></div>
+  <div class="guide-step"><div class="guide-num">3</div><div style="font-size:14px;line-height:1.7">伝票番号・納品日・品名・数量・単価を修正して「修正を保存する」を押します。</div></div>
+  <div class="guide-step"><div class="guide-num">4</div><div style="font-size:14px;line-height:1.7">保存後に「再印刷」ボタンで修正後の内容を印刷します。</div></div>
+  <div class="guide-note">修正後は明細書データを再書き出しして、もう一度取り込んでください（同じ列に上書きされます）。</div></div>
+  <div><div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">不要な履歴を削除したい場合</div>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">発行履歴</span>タブを開きます。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">該当の伝票の「削除」ボタンを押します。確認メッセージが出るので「OK」を押すと削除されます。</div></div>
+  <div class="guide-warn">削除した履歴は元に戻せません。明細書への書き出しは削除前に済ませておいてください。</div></div></div>
+
+  <div class="card"><h3 class="guide-h3">⚙️ 客先・商品の管理</h3>
+  <div style="margin-bottom:16px"><div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">新しい客先を追加するとき</div>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">客先管理</span>タブの「＋ 客先追加」ボタンを押します。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">客先No.は自動でセットされます。客先名・最低保証金額・納品サイクルを入力して「追加」を押します。</div></div>
+  <div class="guide-step"><div class="guide-num">3</div><div style="font-size:14px;line-height:1.7">追加後、「詳細編集」から締め日を設定してください。</div></div>
+  <div class="guide-note">納品サイクルは曜日ボタンをクリックして設定します。複数選択できます。</div></div>
+  <div><div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:10px">新しい商品を追加するとき</div>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">商品管理</span>タブの「＋ 商品追加」ボタンを押します。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">商品コードは自動でセットされます。品名を入力して「追加」を押します。</div></div></div></div>
+
+  <div class="card"><h3 class="guide-h3">💾 3台のPCでデータを共有する方法</h3>
+  <p style="font-size:14px;color:#555;margin-bottom:16px;line-height:1.7">現在のシステムはPC個別にデータを保存しています。複数台で同じデータを使うには、定期的にバックアップを共有してください。</p>
+  <div class="guide-step"><div class="guide-num">1</div><div style="font-size:14px;line-height:1.7"><span class="guide-badge">設定</span>タブを開き、「バックアップを書き出す」ボタンを押します。</div></div>
+  <div class="guide-step"><div class="guide-num">2</div><div style="font-size:14px;line-height:1.7">ファイルを共有フォルダやUSBメモリで他のPCに渡します。</div></div>
+  <div class="guide-step"><div class="guide-num">3</div><div style="font-size:14px;line-height:1.7">他のPCで<span class="guide-badge">設定</span>タブを開き「データをインポートする」で読み込みます。</div></div>
+  <div class="guide-warn">インポートすると現在のデータが上書きされます。必ず最新のPCからバックアップを取ってから渡してください。</div></div>
+  <div class="card"><h3 class="guide-h3">将来的な自動連動について</h3><p style="font-size:14px;color:#555;line-height:1.7">将来的にはクラウド（Firebase等）と連動することで、3台のPCが自動でリアルタイムに同期できるようになります。現在は手動バックアップで運用し、タイミングを見て自動連動化を検討してください。</p></div>`;
+}
+
+// --- Print Modal ---
+
+function renderPrintModal(){
+  const inv=state.printInvoice;if(!inv)return;
+  const modal=document.getElementById("print-modal");
+  modal.classList.remove("hidden");
+  const displayItems=inv.items.filter(i=>parseFloat(i.qty)>0);
+  const maxRows=11;
+  const bdr="1px solid #000";
+  const isMulti=displayItems.length>maxRows;
+
+  // 1ページ分のHTMLを生成（items・showTotal・showBiko・pageLabel・isCtrl）
+  function calcCustomerFontSize(name){
+    const len=(name||"").length;
+    if(len<=18)return 17;
+    if(len<=30)return 15;
+    if(len<=42)return 13.5;
+    if(len<=60)return 12;
+    return 10.5;
+  }
+  function block(items,showTotal,showBiko,pageLabel,isCtrl){
+    const padded=[...items];
+    const rows_n=isMulti?maxRows:maxRows;
+    while(padded.length<rows_n)padded.push(null);
+    const subtotal=items.reduce((s,i)=>s+(parseFloat(i.qty)||0)*(parseFloat(i.price)||0),0);
+    const rows=padded.map(item=>`<tr style="height:9mm"><td style="border:${bdr};padding:0px 5px;font-size:12.5px">${item?item.name:"\u00a0"}</td><td style="border:${bdr};padding:0px 4px;text-align:center;font-size:12.5px;width:44px">${item?item.qty:""}</td><td style="border:${bdr};padding:0px 4px;text-align:right;font-size:12.5px;width:58px">${item?item.price.toLocaleString():""}</td><td style="border:${bdr};padding:0px 4px;text-align:right;font-size:12.5px;width:68px">${item?(parseInt(item.qty)*item.price).toLocaleString():""}</td></tr>`).join("");
+    const totalVal=showTotal?Math.max(subtotal,inv.minGuarantee||0):null;
+    return`<div style="flex:1;min-width:0;padding:0 3px;font-family:'MS Mincho',serif;display:flex;flex-direction:column;height:100%">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1px">
+        <div style="font-size:22px;font-weight:700">${isCtrl?"受領書":"納品書"}${pageLabel?`<span style="font-size:13px;margin-left:8px">${pageLabel}</span>`:""}</div>
+        <div style="font-size:15px">\u00a0\u00a0 № ${inv.invoiceNo}</div>
+      </div>
+      <div style="border:${bdr};padding:0 8px;margin-bottom:2px;height:15mm;position:relative"><span style="font-size:${calcCustomerFontSize(inv.customer)}px;font-weight:700;white-space:normal;word-break:break-word;line-height:1.12;display:block;padding-right:92px;padding-top:2px">${inv.customer}</span><span style="position:absolute;top:2px;right:8px;white-space:nowrap;font-size:${calcCustomerFontSize(inv.customer)}px;font-weight:700">様</span><span style="position:absolute;right:8px;bottom:3px;font-size:11px;color:#333;white-space:nowrap">納品日　<strong style="font-size:13px">${fmtDate(inv.deliveryDate)}</strong></span></div>
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;height:105mm">
+        <thead><tr>
+          <th style="border:${bdr};padding:3px 6px;text-align:center;background:#f0f0f0;font-size:12px">品\u3000名</th>
+          <th style="border:${bdr};padding:3px 4px;width:63px;text-align:center;background:#f0f0f0;font-size:12px">数量</th>
+          <th style="border:${bdr};padding:3px 4px;width:58px;text-align:center;background:#f0f0f0;font-size:12px">単\u3000価</th>
+          <th style="border:${bdr};padding:3px 4px;width:87px;text-align:center;background:#f0f0f0;font-size:12px">金\u3000額</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;border:${bdr};border-top:2px solid #000;margin-top:-1px">
+        <div style="border-left:${bdr};padding:3px 8px;font-size:11px;display:flex;align-items:center">${showTotal?"合\u3000計":"小\u3000計"}</div>
+        <div style="padding:3px 10px;font-size:16px;font-weight:700;min-width:85px;text-align:right">¥${showTotal?totalVal.toLocaleString():subtotal.toLocaleString()}</div>
+      </div>
+      ${showTotal&&inv.minGuarantee>0&&inv.subtotal<inv.minGuarantee?`<div style="font-size:10px;color:#888;text-align:right">（最低保証 ¥${inv.minGuarantee.toLocaleString()} 適用）</div>`:""}
+      ${showBiko?`<div style="border:${bdr};border-top:none;flex-shrink:0;min-height:59px;padding:2px 6px;margin-top:-1px"><div style="font-size:10px;color:#555;margin-bottom:1px">備\u3000考</div><div style="font-size:11.5px;line-height:1.5;white-space:pre-wrap">${inv.memo||"\u00a0"}</div></div>`:""}
+      <div style="display:flex;justify-content:space-between;border:${bdr};border-top:none;height:19mm;margin-top:-1px">
+        ${isCtrl?`<div style="border-right:${bdr};min-width:17mm;width:17mm;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:2px"><span style="font-size:9px">受領印</span></div>`:""}
+        <div style="padding:2px 8px 2px 0;font-size:10.5px;line-height:1.3;text-align:right;white-space:nowrap;overflow:hidden;display:flex;flex-direction:column;justify-content:center;letter-spacing:-0.03em;flex:1">
+          <div style="font-weight:700;font-size:12px"><span style="font-size:13px">${COMPANY.name}</span><span style="font-size:9.5px">${COMPANY.division}</span></div>
+          <div>${COMPANY.zip}${COMPANY.address}</div>
+          <div>${COMPANY.tel}　${COMPANY.fax}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ページ分割
+  const pages=[];
+  if(!isMulti){
+    pages.push({items:displayItems,showTotal:true,showBiko:true,label:""});
+  } else {
+    for(let i=0;i<displayItems.length;i+=maxRows){
+      const chunk=displayItems.slice(i,i+maxRows);
+      const isLast=i+maxRows>=displayItems.length;
+      const pg=Math.floor(i/maxRows)+1;
+      const total=Math.ceil(displayItems.length/maxRows);
+      pages.push({items:chunk,showTotal:isLast,showBiko:isLast,label:`(${pg}/${total})`});
+    }
+  }
+
+  const div=s=>`<div style="width:20px;min-width:20px;display:flex;align-items:center;justify-content:center"><div style="border-left:1px dashed #aaa;height:100%"></div></div>`;
+
+  // プレビュー用HTML
+  const previewHtml=pages.map((p,pi)=>`
+    ${pi>0?`<div style="margin-top:24px;border-top:2px dashed #ccc;padding-top:16px;font-size:12px;color:#888;text-align:center">── 2枚目 ──</div>`:""}
+    <div style="display:flex;gap:0;background:#fff;width:100%;box-sizing:border-box">
+      ${block(p.items,p.showTotal,p.showBiko,p.label,false)}
+      ${div()}
+      ${block(p.items,p.showTotal,p.showBiko,p.label,true)}
+    </div>`).join("");
+
+  // 印刷用HTML（print-area）
+  const printHtml=pages.map((p,pi)=>`
+    <div class="slot">${block(p.items,p.showTotal,p.showBiko,p.label,false)}</div>
+    <div class="dv"><div style="border-left:1px dashed #aaa;height:100%"></div></div>
+    <div class="slot">${block(p.items,p.showTotal,p.showBiko,p.label,true)}</div>
+    `).join("");
+
+  modal.innerHTML=`<div style="background:#fff;border-radius:12px;padding:24px;max-width:920px;width:95%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;gap:12px;justify-content:flex-end;align-items:center;margin-bottom:16px">
+      <button class="btn-cancel" style="padding:10px 20px;font-size:15px" onclick="closePrint()">閉じる</button>
+      <button onclick="downloadCSV(state.printInvoice)" style="background:#2e7d32;color:#fff;border:none;padding:10px 22px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">⬇ CSVダウンロード</button>
+      <button class="btn-primary" style="padding:10px 28px;font-size:15px" onclick="doPrint()">印刷（B5横）</button>
+    </div>
+    ${previewHtml}
+    <div style="margin-top:12px;font-size:13px;color:#c00;text-align:center;font-weight:600">⚠️ 印刷設定：用紙B5・横向き・<u>余白「なし」</u> を必ず選択してください</div>
+  </div>`;
+
+  // print-area をbody直下に設置
+  let pa=document.getElementById("print-area");
+  if(!pa){pa=document.createElement("div");pa.id="print-area";document.body.appendChild(pa);}
+  pa.innerHTML=printHtml;
+}
+function downloadCSV(inv){
+  if(!inv)return;
+  var BOM="\uFEFF";
+  var header=["納品日","客先名","品名","数量","単価","金額","合計金額","備考"];
+  var rows=inv.items.map(function(item,i){
+    return [
+      fmtDate(inv.deliveryDate),
+      inv.customer,
+      item.name,
+      item.qty,
+      item.price,
+      parseInt(item.qty)*item.price,
+      i===0?inv.total:"",
+      i===0?(inv.memo||""):""
+    ];
+  });
+  function esc(v){
+    var s=String(v!==null&&v!==undefined?v:"");
+    return (s.indexOf(",")>=0||s.indexOf('"')>=0||s.indexOf("\n")>=0)?'"'+s.replace(/"/g,'""')+'"':s;
+  }
+  var lines=[header].concat(rows).map(function(r){return r.map(esc).join(",");});
+  var csv=BOM+lines.join("\r\n");
+  var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  var d=fmtDate(inv.deliveryDate).replace(/\//g,"");
+  a.href=url;
+  a.download="納品書_"+inv.invoiceNo+"_"+d+".csv";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("CSVをダウンロードしました");
+}
+function doPrint(){
+  const pa=document.getElementById("print-area");
+  if(!pa)return;
+  const inner=pa.innerHTML;
+  const css=''
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'@page{size:257mm 168mm landscape;margin:0}'
+    +'html,body{margin:0;padding:0;width:257mm;height:168mm;overflow:hidden;background:#fff;-webkit-print-color-adjust:exact;font-family:"MS Mincho",serif}'
+    +'.wrap{position:absolute;top:0;left:0;width:257mm;height:168mm;overflow:hidden}'
+    +'.inner{position:absolute;top:0;left:0;width:257mm;height:168mm;transform:translate(10.3mm,9.7mm) scale(0.92);transform-origin:top left;display:flex}'
+    +'.slot{flex:1;min-width:0;max-width:calc(50% - 10px);padding:1mm 3mm}'
+    +'.dv{flex:0 0 20px;width:20px;display:flex;align-items:center;justify-content:center}'
+    +'table{table-layout:fixed;width:100%;border-collapse:collapse}'
+    +'tbody tr{height:9mm}'
+    +'thead th{padding:2px 4px}';
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'
+    +'<body><div class="wrap"><div class="inner">'+inner+'</div></div></body></html>';
+  const ifr=document.createElement("iframe");
+  ifr.style.cssText="position:fixed;top:-9999px;left:-9999px;width:257mm;height:168mm;border:none;";
+  document.body.appendChild(ifr);
+  const doc=ifr.contentDocument||ifr.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  setTimeout(function(){
+    ifr.contentWindow.focus();
+    ifr.contentWindow.print();
+    setTimeout(function(){document.body.removeChild(ifr);},500);
+  },600);
+}
+function closePrint(){state.showPrint=false;state.printInvoice=null;document.getElementById("print-modal").classList.add("hidden");document.getElementById("print-modal").innerHTML="";const pa=document.getElementById("print-area");if(pa)pa.remove();}
+
+function bindEvents(){
+  document.getElementById("print-modal").onclick=e=>{if(e.target===document.getElementById("print-modal"))closePrint();};
+}
+
+render();
+</script>
+</body>
+</html>
