@@ -10,6 +10,7 @@
       "**/node_modules/**",
       "index_v5_7.html",
       "在庫管理.html",
+      "icons/icon-source.png",
       "supabase-orders-table.sql",
       ".github/**"
     ],
