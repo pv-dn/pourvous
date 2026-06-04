@@ -1,8 +1,12 @@
 # プゥル・ヴー在庫管理
 
-## 公開URL（メイン）
+正本: `在庫管理.html`（Supabase `jsowadohckantjtljdlb`・注文コーナー付き）
+
+## 公開URL
 
 **https://pourvous-inventory.web.app/**
+
+デスクトップの `PourVous在庫管理.lnk`（Chrome PWA）を使う場合は `Downloads\プゥル・ヴー在庫管理_19.html` も同内容に同期済み。
 
 ## 注文コーナー（Supabase）
 
