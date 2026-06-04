@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="プゥル・ヴー在庫管理">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f4f0">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<title>プゥル・ヴー在庫管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;min-height:100dvh}
+.app{max-width:700px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+.header{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-bottom:1px solid #e0ddd5;background:#fff;position:sticky;top:0;z-index:10}
+.header h1{font-size:16px;font-weight:600;color:#1a1a1a;letter-spacing:0.02em}
+.header-btns{display:flex;gap:6px;align-items:center}
+.hbtn{background:#fff;border:1px solid #ddd;border-radius:9px;padding:6px 11px;font-size:12px;cursor:pointer;color:#1a1a1a;font-family:inherit}
+.hbtn:active{background:#f0ede6}
+.hbtn.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.hbtn.primary:active{opacity:0.8}
+.sync-btn{background:none;border:none;font-size:18px;cursor:pointer;padding:4px;line-height:1}
+.sync-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.order-corner{background:#fff;border-bottom:1px solid #e0ddd5;padding:0.6rem 0.75rem}
+.order-corner-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.order-corner-title{font-size:13px;font-weight:600;color:#1a1a1a}
+.order-corner-count{font-size:11px;color:#888;margin-left:6px;font-weight:500}
+.order-list{list-style:none;display:flex;flex-direction:column;gap:5px;max-height:140px;overflow-y:auto}
+.order-list:empty::before{content:''}
+.order-empty{font-size:12px;color:#aaa;padding:4px 0}
+.order-item{display:flex;align-items:center;justify-content:space-between;background:#f7f6f2;border:1px solid #e8e6e0;border-radius:9px;padding:7px 10px}
+.order-item-name{font-size:13px;font-weight:600;color:#1a1a1a}
+.order-del{background:none;border:none;color:#999;font-size:14px;cursor:pointer;padding:2px 6px;border-radius:5px;font-family:inherit;line-height:1}
+.order-del:active{background:#ffeaea;color:#c0392b}
+.tab-bar{display:flex;overflow-x:auto;border-bottom:1px solid #e0ddd5;background:#fff;padding:0 0.75rem;position:sticky;top:53px;z-index:9}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:8px 13px;font-size:13px;cursor:pointer;color:#888;border:none;border-bottom:2px solid transparent;white-space:nowrap;background:none;font-family:inherit;flex-shrink:0}
+.tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:600}
+.body{padding:0.75rem;flex:1}
+.alert-banner{background:#fff8ec;border:1px solid #f5c842;border-radius:10px;padding:8px 12px;margin-bottom:0.75rem;display:none}
+.alert-banner.show{display:block}
+.alert-title{font-size:12px;font-weight:600;color:#7a4f00;margin-bottom:3px}
+.alert-banner ul{list-style:none}
+.alert-banner li{font-size:12px;color:#a06800;padding:1px 0}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:0.75rem}
+.stat{background:#fff;border-radius:10px;padding:7px 8px;text-align:center;border:1px solid #e8e6e0}
+.stat-label{font-size:11px;color:#888;margin-bottom:2px}
+.stat-value{font-size:18px;font-weight:600;color:#1a1a1a}
+.items{display:flex;flex-direction:column;gap:6px}
+.item-card{background:#fff;border:1px solid #e8e6e0;border-radius:13px;padding:8px 11px;transition:border-color 0.15s}
+.item-card.alert-active{border-color:#f5a623}
+.item-card.editing{border-color:#4a90d9}
+.item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.item-name-area{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.item-name{font-size:13px;font-weight:600;color:#1a1a1a}
+.item-actions{display:flex;gap:3px;flex-shrink:0}
+.icon-btn{background:none;border:1px solid #e0ddd5;cursor:pointer;padding:4px 8px;border-radius:7px;color:#666;font-size:12px;line-height:1;font-family:inherit}
+.icon-btn:active{background:#f0ede6}
+.icon-btn.order-btn{color:#7a4f00;border-color:#e8c87a;background:#fffaf0}
+.icon-btn.order-btn:active{background:#fff3cd}
+.icon-btn.danger:active{background:#ffeaea;color:#c0392b}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.metric{background:#f7f6f2;border-radius:8px;padding:6px 7px}
+.metric-label{font-size:10px;color:#888;margin-bottom:3px}
+.metric-row{display:flex;align-items:center;gap:2px}
+.metric-val{font-size:16px;font-weight:600;color:#1a1a1a}
+.num-input{width:38px;font-size:13px;font-weight:600;border:1px solid #ddd;border-radius:6px;padding:1px 2px;background:#fff;color:#1a1a1a;text-align:center;font-family:inherit}
+.step-btn{background:#fff;border:1px solid #ddd;border-radius:6px;width:22px;height:22px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#333;flex-shrink:0;font-family:inherit}
+.step-btn:active{background:#f0ede6}
+.stock-badge{font-size:10px;padding:1px 6px;border-radius:999px;display:inline-block;font-weight:500}
+.s-ok{background:#e6f5ec;color:#1e7e3a}
+.s-low{background:#fff3cd;color:#856404}
+.s-zero{background:#fde8e8;color:#b91c1c}
+.edit-row{display:none;margin-top:8px;padding-top:8px;border-top:1px solid #eee;flex-direction:column;gap:8px}
+.edit-row.open{display:flex}
+.edit-label{font-size:11px;color:#888;font-weight:600;margin-bottom:4px}
+.edit-fields{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.ef{display:flex;flex-direction:column;gap:2px}
+.ef label{font-size:10px;color:#888}
+.ef input,.ef select{border:1px solid #ddd;border-radius:8px;padding:5px 8px;font-size:13px;background:#f7f6f2;color:#1a1a1a;font-family:inherit;width:120px}
+.alert-row{background:#f7f6f2;border-radius:9px;padding:7px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toggle-wrap{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#1a1a1a;user-select:none}
+.track{width:36px;height:20px;border-radius:999px;background:#ccc;position:relative;transition:background 0.2s;flex-shrink:0}
+.track.on{background:#34c759}
+.thumb{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left 0.15s;box-shadow:0 1px 2px rgba(0,0,0,0.2)}
+.track.on .thumb{left:18px}
+.thr-wrap{display:flex;align-items:center;gap:4px;font-size:12px;color:#555}
+.thr-input{width:50px;border:1px solid #ddd;border-radius:7px;padding:3px 5px;font-size:12px;background:#fff;color:#1a1a1a;text-align:center;font-family:inherit}
+.save-btn{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:6px 13px;font-size:12px;cursor:pointer;margin-left:auto;font-family:inherit;font-weight:600}
+.save-btn:active{opacity:0.8}
+.empty{text-align:center;padding:2.5rem 1rem;color:#aaa;font-size:13px;line-height:1.7}
+.toast{position:fixed;bottom:calc(1.5rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:8px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;white-space:nowrap}
+.toast.show{opacity:1}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));width:100%;max-width:700px}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:1rem;text-align:center}
+.fg{margin-bottom:11px}
+.fg label{font-size:12px;color:#888;display:block;margin-bottom:4px}
+.fg input,.fg select{width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:11px;font-size:15px;background:#f7f6f2;color:#1a1a1a;font-family:inherit}
+.modal-btns{display:flex;gap:8px;margin-top:1rem}
+.mbtn{flex:1;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600}
+.mbtn.cancel{background:#f0ede6;border:none;color:#555}
+.mbtn.cancel:active{background:#e0ddd5}
+.mbtn.ok{background:#1a1a1a;color:#fff;border:none}
+.mbtn.ok:active{opacity:0.8}
+.genre-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#f7f6f2;border-radius:9px;margin-top:6px}
+.genre-item span{font-size:13px;color:#1a1a1a}
+.genre-del{background:none;border:none;color:#c0392b;font-size:13px;cursor:pointer;padding:2px 6px;border-radius:5px;font-family:inherit}
+.genre-del:active{background:#ffeaea}
+.loading{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>プゥル・ヴー在庫管理</h1>
+    <div class="header-btns">
+      <button class="sync-btn" id="sync-btn" onclick="loadAll()" title="更新">↻</button>
+      <button class="hbtn" onclick="openGenreModal()">ジャンル管理</button>
+      <button class="hbtn primary" onclick="openItemModal()">＋ 追加</button>
+    </div>
+  </div>
+  <div class="order-corner" id="order-corner">
+    <div class="order-corner-head">
+      <div class="order-corner-title">📋 注文コーナー<span class="order-corner-count" id="order-count"></span></div>
+      <button class="hbtn" id="clear-orders-btn" onclick="clearOrders()" style="display:none;font-size:11px;padding:4px 9px">すべて消す</button>
+    </div>
+    <ul class="order-list" id="order-list"></ul>
+  </div>
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="body">
+    <div class="alert-banner" id="alert-banner">
+      <div class="alert-title">⚠ 在庫アラート</div>
+      <ul id="alert-list"></ul>
+    </div>
+    <div class="summary">
+      <div class="stat"><div class="stat-label">品目数</div><div class="stat-value" id="total-items">—</div></div>
+      <div class="stat"><div class="stat-label">総在庫</div><div class="stat-value" id="total-stock">—</div></div>
+      <div class="stat"><div class="stat-label">在庫切れ</div><div class="stat-value" id="zero-items" style="color:#b91c1c">—</div></div>
+    </div>
+    <div class="items" id="items-list"><div class="loading">読み込み中...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="item-modal">
+  <div class="modal">
+    <h2>品目を追加</h2>
+    <div class="fg"><label>品目名</label><input type="text" id="new-name" placeholder="例：りんご"></div>
+    <div class="fg"><label>ジャンル</label><select id="new-genre"></select></div>
+    <div class="fg"><label>初期在庫数</label><input type="number" id="new-stock" value="0" min="0"></div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeItemModal()">キャンセル</button>
+      <button class="mbtn ok" onclick="addItem()">追加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="genre-modal">
+  <div class="modal">
+    <h2>ジャンル管理</h2>
+    <div class="fg"><label>新しいジャンル名</label><input type="text" id="new-genre-name" placeholder="例：野菜"></div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeGenreModal()">閉じる</button>
+      <button class="mbtn ok" onclick="addGenre()">追加</button>
+    </div>
+    <div id="genre-list"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://jsowadohckantjtljdlb.supabase.co';
+const SUPABASE_KEY='sb_publishable_jwlka4_Vmp92UJf7SBbwg_RZy34FWo';
+const ORDERS_LS_KEY='pourvous_orders';
+
+async function api(path,method='GET',body=null){
+  const opts={method,headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''}};
+  if(body)opts.body=JSON.stringify(body);
+  const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,opts);
+  if(!res.ok){const e=await res.text();throw new Error(e);}
+  const t=await res.text();return t?JSON.parse(t):null;
+}
+
+let genres=['すべて'],items=[],orders=[],currentGenre='すべて',ordersUseLocal=false;
+
+function isAl(i){return i.alert_on&&i.stock<=i.threshold;}
+function badge(s){
+  if(s===0)return '<span class="stock-badge s-zero">在庫切れ</span>';
+  if(s<=10)return '<span class="stock-badge s-low">残りわずか</span>';
+  return '<span class="stock-badge s-ok">在庫あり</span>';
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function setSyncing(on){document.getElementById('sync-btn').classList.toggle('spinning',on);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+function loadOrdersLocal(){
+  try{orders=JSON.parse(localStorage.getItem(ORDERS_LS_KEY)||'[]');}catch{orders=[];}
+  ordersUseLocal=true;
+  renderOrderCorner();
+}
+
+function saveOrdersLocal(){
+  localStorage.setItem(ORDERS_LS_KEY,JSON.stringify(orders));
+}
+
+async function loadOrders(){
+  try{
+    const rows=await api('orders?order=created_at.asc');
+    orders=rows||[];
+    ordersUseLocal=false;
+    renderOrderCorner();
+  }catch{
+    loadOrdersLocal();
+  }
+}
+
+function renderOrderCorner(){
+  const el=document.getElementById('order-list');
+  const cnt=document.getElementById('order-count');
+  const clr=document.getElementById('clear-orders-btn');
+  cnt.textContent=orders.length?'（'+orders.length+'件）':'';
+  clr.style.display=orders.length?'inline-block':'none';
+  if(!orders.length){
+    el.innerHTML='<li class="order-empty">注文はありません</li>';
+    return;
+  }
+  el.innerHTML=orders.map(o=>`
+    <li class="order-item">
+      <span class="order-item-name">${esc(o.item_name)}</span>
+      <button class="order-del" onclick="removeOrder(${o.id})" title="消す">✕</button>
+    </li>`).join('');
+}
+
+async function placeOrder(name){
+  const itemName=String(name).trim();
+  if(!itemName)return;
+  try{
+    if(ordersUseLocal)throw new Error('local');
+    const rows=await api('orders','POST',{item_name:itemName});
+    orders.push(rows[0]);
+  }catch{
+    ordersUseLocal=true;
+    const o={id:Date.now(),item_name:itemName,created_at:new Date().toISOString()};
+    orders.push(o);
+    saveOrdersLocal();
+  }
+  renderOrderCorner();
+  showToast('注文しました：'+itemName);
+  document.getElementById('order-corner').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function removeOrder(id){
+  if(!ordersUseLocal){
+    try{await api('orders?id=eq.'+id,'DELETE');}
+    catch(e){showToast('削除エラー');return;}
+  }
+  orders=orders.filter(o=>o.id!=id);
+  if(ordersUseLocal)saveOrdersLocal();
+  renderOrderCorner();
+}
+
+async function clearOrders(){
+  if(!orders.length)return;
+  if(!confirm('注文コーナーをすべて消しますか？'))return;
+  try{
+    if(!ordersUseLocal){
+      for(const o of [...orders]){await api('orders?id=eq.'+o.id,'DELETE');}
+    }
+    orders=[];
+    if(ordersUseLocal)saveOrdersLocal();
+    renderOrderCorner();
+    showToast('注文をすべて消しました');
+  }catch(e){showToast('削除エラー');}
+}
+
+async function loadAll(){
+  setSyncing(true);
+  try{
+    const[gRows,iRows]=await Promise.all([api('genres?order=sort_order'),api('items?order=id')]);
+    genres=['すべて',...gRows.map(g=>g.name)];
+    items=iRows;
+    renderTabs();renderItems();
+    await loadOrders();
+    showToast('データを更新しました');
+  }catch(e){showToast('通信エラー：'+e.message);}
+  setSyncing(false);
+}
+
+function vis(){return currentGenre==='すべて'?items:items.filter(i=>i.genre===currentGenre);}
+function renderTabs(){document.getElementById('tab-bar').innerHTML=genres.map(g=>`<button class="tab${g===currentGenre?' active':''}" onclick="setGenre('${g.replace(/'/g,"\\'")}')">${esc(g)}</button>`).join('');}
+function setGenre(g){currentGenre=g;renderTabs();renderItems();}
+
+function updateSummary(){const list=vis();document.getElementById('total-items').textContent=list.length;document.getElementById('total-stock').textContent=list.reduce((a,i)=>a+i.stock,0);document.getElementById('zero-items').textContent=list.filter(i=>i.stock===0).length;}
+function updateAlerts(){const al=items.filter(isAl);const b=document.getElementById('alert-banner');if(!al.length){b.classList.remove('show');return;}b.classList.add('show');document.getElementById('alert-list').innerHTML=al.map(i=>`<li>・ ${esc(i.name)}（${esc(i.genre)}）：${i.stock}個 / 設定${i.threshold}個以下</li>`).join('');}
+
+function renderItems(){
+  updateSummary();updateAlerts();
+  const list=vis();const el=document.getElementById('items-list');
+  if(!list.length){el.innerHTML='<div class="empty">このジャンルに品目がありません。<br>「＋ 追加」から登録してください。</div>';return;}
+  el.innerHTML=list.map(item=>`
+    <div class="item-card${isAl(item)?' alert-active':''}" id="card-${item.id}">
+      <div class="item-top">
+        <div class="item-name-area"><span class="item-name">${esc(item.name)}</span>${isAl(item)?'<span style="font-size:12px">⚠</span>':''}${badge(item.stock)}</div>
+        <div class="item-actions">
+          <button class="icon-btn order-btn" onclick="placeOrder(${JSON.stringify(item.name)})">注文</button>
+          <button class="icon-btn" onclick="toggleEdit(${item.id})">✎</button>
+          <button class="icon-btn danger" onclick="delItem(${item.id})">✕</button>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">在庫数</div><span class="metric-val" id="sv-${item.id}">${item.stock}</span></div>
+        <div class="metric"><div class="metric-label">入荷数</div><div class="metric-row"><button class="step-btn" onclick="chgR(${item.id},-1)">−</button><input class="num-input" type="number" id="r-${item.id}" value="${item.receipt}" min="0" onchange="setR(${item.id},this.value)" style="color:#1e7e3a"><button class="step-btn" onclick="chgR(${item.id},1)">＋</button></div></div>
+        <div class="metric"><div class="metric-label">出庫数</div><div class="metric-row"><button class="step-btn" onclick="chgI(${item.id},-1)">−</button><input class="num-input" type="number" id="i-${item.id}" value="${item.issue}" min="0" onchange="setI(${item.id},this.value)" style="color:#b91c1c"><button class="step-btn" onclick="chgI(${item.id},1)">＋</button></div></div>
+      </div>
+      <div class="edit-row" id="er-${item.id}">
+        <div><div class="edit-label">基本情報</div><div class="edit-fields">
+          <div class="ef"><label>品目名</label><input type="text" id="ne-${item.id}" value="${esc(item.name)}"></div>
+          <div class="ef"><label>ジャンル</label><select id="ge-${item.id}">${genres.filter(g=>g!=='すべて').map(g=>`<option${g===item.genre?' selected':''}>${esc(g)}</option>`).join('')}</select></div>
+          <div class="ef"><label>在庫（直接修正）</label><input type="number" id="se-${item.id}" value="${item.stock}" min="0" style="width:90px"></div>
+        </div></div>
+        <div><div class="edit-label">アラート設定</div><div class="alert-row">
+          <div class="toggle-wrap" onclick="togAlert(${item.id})"><div class="track${item.alert_on?' on':''}" id="tr-${item.id}"><div class="thumb"></div></div><span id="tl-${item.id}">${item.alert_on?'ON':'OFF'}</span></div>
+          <div class="thr-wrap" id="tw-${item.id}" style="${item.alert_on?'':'opacity:0.4;pointer-events:none'}"><span>在庫</span><input class="thr-input" type="number" id="th-${item.id}" value="${item.threshold}" min="0"><span>個以下でお知らせ</span></div>
+          <button class="save-btn" onclick="saveEdit(${item.id})">保存</button>
+        </div></div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleEdit(id){const r=document.getElementById(`er-${id}`);const c=document.getElementById(`card-${id}`);const o=r.classList.contains('open');r.classList.toggle('open',!o);c.classList.toggle('editing',!o);}
+
+async function togAlert(id){
+  const item=items.find(i=>i.id===id);const nv=!item.alert_on;item.alert_on=nv;
+  document.getElementById(`tr-${id}`).classList.toggle('on',nv);
+  document.getElementById(`tl-${id}`).textContent=nv?'ON':'OFF';
+  const tw=document.getElementById(`tw-${id}`);tw.style.opacity=nv?'1':'0.4';tw.style.pointerEvents=nv?'auto':'none';
+  document.getElementById(`card-${id}`).classList.toggle('alert-active',isAl(item));updateAlerts();
+  try{await api(`items?id=eq.${id}`,'PATCH',{alert_on:nv});}catch(e){showToast('保存エラー');}
+}
+
+async function saveEdit(id){
+  const item=items.find(i=>i.id===id);
+  const n=document.getElementById(`ne-${id}`).value.trim();
+  const g=document.getElementById(`ge-${id}`).value;
+  const s=parseInt(document.getElementById(`se-${id}`).value)||0;
+  const t=parseInt(document.getElementById(`th-${id}`).value)||0;
+  if(!n)return;
+  const patch={name:n,genre:g,stock:Math.max(0,s),threshold:Math.max(0,t),receipt:0,issue:0};
+  try{await api(`items?id=eq.${id}`,'PATCH',patch);Object.assign(item,patch);showToast('保存しました');renderItems();}
+  catch(e){showToast('保存エラー：'+e.message);}
+}
+
+async function delItem(id){
+  if(!confirm('この品目を削除しますか？'))return;
+  try{await api(`items?id=eq.${id}`,'DELETE');items=items.filter(i=>i.id!==id);showToast('削除しました');renderItems();}
+  catch(e){showToast('削除エラー');}
+}
+
+async function syncItem(id,patch){
+  const item=items.find(i=>i.id===id);Object.assign(item,patch);
+  const sv=document.getElementById(`sv-${id}`);const rv=document.getElementById(`r-${id}`);const iv=document.getElementById(`i-${id}`);
+  if(sv)sv.textContent=item.stock;if(rv)rv.value=item.receipt;if(iv)iv.value=item.issue;
+  document.getElementById(`card-${id}`)?.classList.toggle('alert-active',isAl(item));
+  updateSummary();updateAlerts();
+  try{await api(`items?id=eq.${id}`,'PATCH',patch);}catch(e){showToast('通信エラー');}
+}
+
+function chgR(id,d){const i=items.find(x=>x.id===id);syncItem(id,{receipt:Math.max(0,i.receipt+d),stock:Math.max(0,i.stock+d)});}
+function setR(id,v){const i=items.find(x=>x.id===id);const nv=Math.max(0,parseInt(v)||0);syncItem(id,{receipt:nv,stock:Math.max(0,i.stock+(nv-i.receipt))});}
+function chgI(id,d){const i=items.find(x=>x.id===id);const ni=Math.max(0,i.issue+d);syncItem(id,{issue:ni,stock:Math.max(0,i.stock-(ni-i.issue))});}
+function setI(id,v){const i=items.find(x=>x.id===id);const nv=Math.max(0,parseInt(v)||0);syncItem(id,{issue:nv,stock:Math.max(0,i.stock-(nv-i.issue))});}
+
+function populateSelect(){document.getElementById('new-genre').innerHTML=genres.filter(g=>g!=='すべて').map(g=>`<option>${esc(g)}</option>`).join('');}
+function openItemModal(){populateSelect();document.getElementById('new-name').value='';document.getElementById('new-stock').value='0';document.getElementById('item-modal').classList.add('open');setTimeout(()=>document.getElementById('new-name').focus(),150);}
+function closeItemModal(){document.getElementById('item-modal').classList.remove('open');}
+
+async function addItem(){
+  const name=document.getElementById('new-name').value.trim();const genre=document.getElementById('new-genre').value;const stock=parseInt(document.getElementById('new-stock').value)||0;
+  if(!name||!genre)return;
+  try{const rows=await api('items','POST',{name,genre,stock,receipt:0,issue:0,alert_on:true,threshold:10});items.push(rows[0]);currentGenre=genre;closeItemModal();showToast('追加しました');renderTabs();renderItems();}
+  catch(e){showToast('追加エラー：'+e.message);}
+}
+
+function renderGenreList(){
+  const el=document.getElementById('genre-list');const ug=genres.filter(g=>g!=='すべて');
+  if(!ug.length){el.innerHTML='<div style="font-size:12px;color:#aaa;padding:8px 0">ジャンルがありません</div>';return;}
+  el.innerHTML=ug.map(g=>`<div class="genre-item"><span>${esc(g)}</span><button class="genre-del" onclick="delGenre(${JSON.stringify(g)})">削除</button></div>`).join('');
+}
+function openGenreModal(){renderGenreList();document.getElementById('new-genre-name').value='';document.getElementById('genre-modal').classList.add('open');}
+function closeGenreModal(){document.getElementById('genre-modal').classList.remove('open');renderTabs();renderItems();}
+
+async function addGenre(){
+  const n=document.getElementById('new-genre-name').value.trim();if(!n||genres.includes(n))return;
+  try{await api('genres','POST',{name:n,sort_order:genres.length});genres.push(n);document.getElementById('new-genre-name').value='';showToast('ジャンルを追加しました');renderGenreList();}
+  catch(e){showToast('追加エラー：'+e.message);}
+}
+
+async function delGenre(g){
+  if(items.some(i=>i.genre===g)){alert(`「${g}」に品目があるため削除できません。\n先に品目を別のジャンルへ移動してください。`);return;}
+  try{await api(`genres?name=eq.${encodeURIComponent(g)}`,'DELETE');genres=genres.filter(x=>x!==g);if(currentGenre===g)currentGenre='すべて';showToast('削除しました');renderGenreList();}
+  catch(e){showToast('削除エラー');}
+}
+
+document.getElementById('item-modal').addEventListener('click',function(e){if(e.target===this)closeItemModal();});
+document.getElementById('genre-modal').addEventListener('click',function(e){if(e.target===this)closeGenreModal();});
+loadAll();
+</script>
+</body>
+</html>
