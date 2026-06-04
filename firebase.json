@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "site": "pourvous-inventory",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git/**",
+      "**/.*",
+      "**/node_modules/**",
+      "index_v5_7.html",
+      "在庫管理.html",
+      "supabase-orders-table.sql",
+      ".github/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
