@@ -2,11 +2,14 @@
 
 正本: `在庫管理.html`（Supabase `jsowadohckantjtljdlb`・注文コーナー付き）
 
-## 公開URL
+## 日常の起動方法（これが在庫管理アプリ）
 
-**https://pourvous-inventory.web.app/**
+- デスクトップ `PourVous在庫管理.lnk` → Chrome インストール版 PWA（`app-id=fjdfpjippadiknpllhijkfnbcajpnbbo`）
+- 元ファイル: `Downloads\プゥル・ヴー在庫管理_19.html`（`c:\dev\pourvous\在庫管理.html` と同期）
 
-デスクトップの `PourVous在庫管理.lnk`（Chrome PWA）を使う場合は `Downloads\プゥル・ヴー在庫管理_19.html` も同内容に同期済み。
+## 使わない URL（別デプロイ）
+
+- **https://pourvous-inventory.web.app/** — Firebase 用の別サイト。ユーザーは利用しない。
 
 ## 注文コーナー（Supabase）
 
@@ -21,7 +24,11 @@
 .\install-desktop-shortcut.ps1
 ```
 
-## Firebase へ再デプロイ
+（Chrome PWA 向け。`pourvous-inventory.web.app` には向けない。）
+
+## Firebase（任意・バックアップ用のみ）
+
+ユーザー向けの公開先ではない。必要なときだけ:
 
 ```powershell
 firebase deploy --only hosting --project zaikokanri-5708f

@@ -1,0 +1,28 @@
+---
+description: プゥル・ヴー在庫管理単体プロジェクトのコンテキスト（他アプリと混ぜない）
+alwaysApply: true
+---
+
+# pourvous-inventory — 独立プロジェクト
+
+このフォルダ（`c:\dev\pourvous`）は **プゥル・ヴー在庫管理** のみ。
+
+## 作業前に確認
+
+- 詳細は `PROJECT.md` と `README.md` を読む
+- 他アプリ（dream-weaver, shabon-inventory）のコードを import・参照・変更しない
+
+## スタック
+
+単体 HTML + Supabase。正本は **`在庫管理.html`**。
+
+## 主要ファイル
+
+- 編集対象: `在庫管理.html`
+- Supabase SQL: `supabase-orders-table.sql`
+- ショートカット: `install-desktop-shortcut.ps1`
+
+## 注意
+
+- Firebase URL（pourvous-inventory.web.app）はユーザー向け公開先ではない
+- Chrome PWA（app-id=fjdfpjippadiknpllhijkfnbcajpnbbo）が日常の起動方法
